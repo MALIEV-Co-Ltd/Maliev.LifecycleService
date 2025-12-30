@@ -8,6 +8,7 @@ using Xunit;
 
 namespace Maliev.LifecycleService.Tests.Integration;
 
+[Collection("IntegrationTests")]
 public class ExitInterviewControllerTests : BaseIntegrationTest
 {
     public ExitInterviewControllerTests(TestUtilities.LifecycleTestWebApplicationFactory factory) : base(factory)

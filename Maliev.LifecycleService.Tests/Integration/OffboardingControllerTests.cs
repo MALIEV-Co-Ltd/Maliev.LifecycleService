@@ -8,6 +8,7 @@ using Xunit;
 
 namespace Maliev.LifecycleService.Tests.Integration;
 
+[Collection("IntegrationTests")]
 public class OffboardingControllerTests : BaseIntegrationTest
 {
     public OffboardingControllerTests(TestUtilities.LifecycleTestWebApplicationFactory factory) : base(factory)

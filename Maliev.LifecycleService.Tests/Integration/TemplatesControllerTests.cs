@@ -9,6 +9,7 @@ using Xunit;
 
 namespace Maliev.LifecycleService.Tests.Integration;
 
+[Collection("IntegrationTests")]
 public class TemplatesControllerTests : BaseIntegrationTest
 {
     public TemplatesControllerTests(TestUtilities.LifecycleTestWebApplicationFactory factory) : base(factory)
