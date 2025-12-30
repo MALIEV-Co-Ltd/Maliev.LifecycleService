@@ -1,7 +1,7 @@
 using Maliev.MessagingContracts.Generated;
 using Maliev.LifecycleService.Application.Interfaces;
 using Maliev.LifecycleService.Domain.Entities;
-using Maliev.LifecycleService.Domain.Events;
+using DomainEvents = Maliev.LifecycleService.Domain.Events;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 
@@ -89,7 +89,7 @@ public class EmployeeCreatedEventConsumer : IConsumer<EmployeeCreatedEvent>
         await _onboardingRepository.AddAsync(checklist);
 
         _metrics.RecordOnboardingStarted();
-        await _eventPublisher.PublishAsync(new OnboardingStartedEvent(checklist.Id, checklist.EmployeeId, checklist.StartDate));
+        await _eventPublisher.PublishAsync(new DomainEvents.OnboardingStartedEvent(checklist.Id, checklist.EmployeeId, checklist.StartDate));
 
         _logger.LogInformation("Successfully created onboarding checklist {ChecklistId} for employee {EmployeeId}", checklist.Id, payload.EmployeeId);
     }

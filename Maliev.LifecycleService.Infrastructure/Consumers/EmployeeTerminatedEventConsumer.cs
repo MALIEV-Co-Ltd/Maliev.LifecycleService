@@ -1,7 +1,7 @@
 using Maliev.MessagingContracts.Generated;
 using Maliev.LifecycleService.Application.Interfaces;
 using Maliev.LifecycleService.Domain.Entities;
-using Maliev.LifecycleService.Domain.Events;
+using DomainEvents = Maliev.LifecycleService.Domain.Events;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 
@@ -61,7 +61,7 @@ public class EmployeeTerminatedEventConsumer : IConsumer<EmployeeTerminatedEvent
         await _offboardingRepository.AddAsync(checklist);
 
         _metrics.RecordOffboardingStarted();
-        await _eventPublisher.PublishAsync(new OffboardingStartedEvent(checklist.Id, checklist.EmployeeId, checklist.TerminationDate));
+        await _eventPublisher.PublishAsync(new DomainEvents.OffboardingStartedEvent(checklist.Id, checklist.EmployeeId, checklist.TerminationDate));
 
         _logger.LogInformation("Successfully created offboarding checklist {ChecklistId} for employee {EmployeeId}", checklist.Id, payload.EmployeeId);
     }

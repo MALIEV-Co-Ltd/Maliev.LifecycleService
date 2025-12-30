@@ -119,6 +119,7 @@ builder.Services.AddHostedService<AccessRevocationBackgroundService>();
 builder.Services.AddHostedService<OnboardingReminderBackgroundService>();
 
 var app = builder.Build();
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
 
 // --- 8. Database Migrations ---
 try
