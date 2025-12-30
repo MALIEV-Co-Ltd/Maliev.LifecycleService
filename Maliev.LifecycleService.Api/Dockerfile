@@ -14,7 +14,7 @@ COPY ["Maliev.LifecycleService.Api/Maliev.LifecycleService.Api.csproj", "Maliev.
 COPY ["Maliev.LifecycleService.Application/Maliev.LifecycleService.Application.csproj", "Maliev.LifecycleService.Application/"]
 COPY ["Maliev.LifecycleService.Domain/Maliev.LifecycleService.Domain.csproj", "Maliev.LifecycleService.Domain/"]
 COPY ["Maliev.LifecycleService.Infrastructure/Maliev.LifecycleService.Infrastructure.csproj", "Maliev.LifecycleService.Infrastructure/"]
-COPY ["../Maliev.Aspire/Maliev.Aspire.ServiceDefaults/Maliev.Aspire.ServiceDefaults.csproj", "Maliev.Aspire/Maliev.Aspire.ServiceDefaults/"]
+
 
 RUN --mount=type=secret,id=nuget_username \
     --mount=type=secret,id=nuget_password \
