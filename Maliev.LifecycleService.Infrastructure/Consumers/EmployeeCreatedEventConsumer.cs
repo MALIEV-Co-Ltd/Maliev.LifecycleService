@@ -1,4 +1,4 @@
-using Maliev.EmployeeService.Domain.IntegrationEvents;
+using Maliev.MessagingContracts.Generated;
 using Maliev.LifecycleService.Application.Interfaces;
 using Maliev.LifecycleService.Domain.Entities;
 using Maliev.LifecycleService.Domain.Events;
@@ -8,9 +8,9 @@ using Microsoft.Extensions.Logging;
 namespace Maliev.LifecycleService.Infrastructure.Consumers;
 
 /// <summary>
-/// Consumer for EmployeeCreatedIntegrationEvent that automatically initializes onboarding checklists.
+/// Consumer for EmployeeCreatedEvent that automatically initializes onboarding checklists.
 /// </summary>
-public class EmployeeCreatedEventConsumer : IConsumer<EmployeeCreatedIntegrationEvent>
+public class EmployeeCreatedEventConsumer : IConsumer<EmployeeCreatedEvent>
 {
     private readonly IOnboardingRepository _onboardingRepository;
     private readonly ITemplateRepository _templateRepository;
@@ -41,30 +41,31 @@ public class EmployeeCreatedEventConsumer : IConsumer<EmployeeCreatedIntegration
     }
 
     /// <inheritdoc/>
-    public async Task Consume(ConsumeContext<EmployeeCreatedIntegrationEvent> context)
+    public async Task Consume(ConsumeContext<EmployeeCreatedEvent> context)
     {
         var message = context.Message;
-        _logger.LogInformation("Processing EmployeeCreatedIntegrationEvent for EmployeeId: {EmployeeId}", message.EmployeeId);
+        var payload = message.Payload;
+        _logger.LogInformation("Processing EmployeeCreatedEvent for EmployeeId: {EmployeeId}", payload.EmployeeId);
 
-        var existing = await _onboardingRepository.GetByEmployeeIdAsync(message.EmployeeId);
+        var existing = await _onboardingRepository.GetByEmployeeIdAsync(payload.EmployeeId);
         if (existing != null)
         {
-            _logger.LogWarning("Onboarding checklist already exists for employee {EmployeeId}", message.EmployeeId);
+            _logger.LogWarning("Onboarding checklist already exists for employee {EmployeeId}", payload.EmployeeId);
             return;
         }
 
-        var template = await _templateRepository.GetByDepartmentIdAsync(message.DepartmentId);
+        var template = await _templateRepository.GetByDepartmentIdAsync(payload.DepartmentId);
         if (template == null)
         {
-            _logger.LogWarning("No onboarding template found for department {DepartmentId}. Skipping auto-creation.", message.DepartmentId);
+            _logger.LogWarning("No onboarding template found for department {DepartmentId}. Skipping auto-creation.", payload.DepartmentId);
             return;
         }
 
         var checklist = new OnboardingChecklist
         {
             Id = Guid.NewGuid(),
-            EmployeeId = message.EmployeeId,
-            StartDate = message.HireDate,
+            EmployeeId = payload.EmployeeId,
+            StartDate = payload.StartDate.UtcDateTime,
             TotalItems = template.Items.Count,
             CompletedItems = 0,
             CreatedDate = DateTime.UtcNow
@@ -90,6 +91,6 @@ public class EmployeeCreatedEventConsumer : IConsumer<EmployeeCreatedIntegration
         _metrics.RecordOnboardingStarted();
         await _eventPublisher.PublishAsync(new OnboardingStartedEvent(checklist.Id, checklist.EmployeeId, checklist.StartDate));
 
-        _logger.LogInformation("Successfully created onboarding checklist {ChecklistId} for employee {EmployeeId}", checklist.Id, message.EmployeeId);
+        _logger.LogInformation("Successfully created onboarding checklist {ChecklistId} for employee {EmployeeId}", checklist.Id, payload.EmployeeId);
     }
 }

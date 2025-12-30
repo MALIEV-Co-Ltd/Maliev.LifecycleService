@@ -1,4 +1,4 @@
-using Maliev.EmployeeService.Domain.IntegrationEvents;
+using Maliev.MessagingContracts.Generated;
 using Maliev.LifecycleService.Application.Interfaces;
 using Maliev.LifecycleService.Domain.Entities;
 using Maliev.LifecycleService.Domain.Events;
@@ -8,9 +8,9 @@ using Microsoft.Extensions.Logging;
 namespace Maliev.LifecycleService.Infrastructure.Consumers;
 
 /// <summary>
-/// Consumer for EmployeeTerminatedIntegrationEvent that automatically initializes offboarding checklists.
+/// Consumer for EmployeeTerminatedEvent that automatically initializes offboarding checklists.
 /// </summary>
-public class EmployeeTerminatedEventConsumer : IConsumer<EmployeeTerminatedIntegrationEvent>
+public class EmployeeTerminatedEventConsumer : IConsumer<EmployeeTerminatedEvent>
 {
     private readonly IOffboardingRepository _offboardingRepository;
     private readonly IEventPublisher _eventPublisher;
@@ -37,23 +37,24 @@ public class EmployeeTerminatedEventConsumer : IConsumer<EmployeeTerminatedInteg
     }
 
     /// <inheritdoc/>
-    public async Task Consume(ConsumeContext<EmployeeTerminatedIntegrationEvent> context)
+    public async Task Consume(ConsumeContext<EmployeeTerminatedEvent> context)
     {
         var message = context.Message;
-        _logger.LogInformation("Processing EmployeeTerminatedIntegrationEvent for EmployeeId: {EmployeeId}", message.EmployeeId);
+        var payload = message.Payload;
+        _logger.LogInformation("Processing EmployeeTerminatedEvent for EmployeeId: {EmployeeId}", payload.EmployeeId);
 
-        var existing = await _offboardingRepository.GetByEmployeeIdAsync(message.EmployeeId);
+        var existing = await _offboardingRepository.GetByEmployeeIdAsync(payload.EmployeeId);
         if (existing != null)
         {
-            _logger.LogWarning("Offboarding checklist already exists for employee {EmployeeId}", message.EmployeeId);
+            _logger.LogWarning("Offboarding checklist already exists for employee {EmployeeId}", payload.EmployeeId);
             return;
         }
 
         var checklist = new OffboardingChecklist
         {
             Id = Guid.NewGuid(),
-            EmployeeId = message.EmployeeId,
-            TerminationDate = message.TerminationDate,
+            EmployeeId = payload.EmployeeId,
+            TerminationDate = payload.TerminationDate.UtcDateTime,
             CreatedDate = DateTime.UtcNow
         };
 
@@ -62,6 +63,6 @@ public class EmployeeTerminatedEventConsumer : IConsumer<EmployeeTerminatedInteg
         _metrics.RecordOffboardingStarted();
         await _eventPublisher.PublishAsync(new OffboardingStartedEvent(checklist.Id, checklist.EmployeeId, checklist.TerminationDate));
 
-        _logger.LogInformation("Successfully created offboarding checklist {ChecklistId} for employee {EmployeeId}", checklist.Id, message.EmployeeId);
+        _logger.LogInformation("Successfully created offboarding checklist {ChecklistId} for employee {EmployeeId}", checklist.Id, payload.EmployeeId);
     }
 }
