@@ -1,79 +1,139 @@
-# Lifecycle Service
+# Maliev Lifecycle Service
 
-Dedicated microservice for coordinating employee onboarding, offboarding, and transition processes for Maliev Co. Ltd.
+[![Build Status](https://img.shields.io/badge/Build-Passing-success)](https://github.com/ORGANIZATION/Maliev.LifecycleService)
+[![.NET Version](https://img.shields.io/badge/.NET-10.0-blue)](https://dotnet.microsoft.com/download/dotnet/10.0)
+[![Database](https://img.shields.io/badge/Database-PostgreSQL%2018-blue)](https://www.postgresql.org/)
 
-## Overview
+Orchestration microservice for employee onboarding, offboarding, and transitional workflows.
 
-The Lifecycle Service manages the critical entry and exit phases of the employee journey:
+**Role in MALIEV Architecture**: The central coordinator for employee stage transitions. It automates the complex journey of joining (onboarding) and leaving (offboarding) the organization, triggering tasks across IT, HR, and Facilities to ensure a consistent experience.
 
-- **Onboarding** - Automated checklist generation, task assignment, and progress tracking for new hires.
-- **Offboarding** - Coordinating departure procedures, including equipment return and exit interviews.
-- **Task Management** - Assigning and monitoring specific lifecycle tasks across different departments (IT, HR, Facilities).
-- **Access Revocation** - Triggering system access removal workflows upon employee termination.
+---
 
-## Architecture
+## 🏗️ Architecture & Tech Stack
 
-- **Framework**: ASP.NET Core 10.0
-- **Database**: PostgreSQL 18 with Entity Framework Core
+- **Framework**: ASP.NET Core 10.0 (C# 13)
+- **Database**: PostgreSQL 18 with Entity Framework Core 10.x
+- **Distributed Cache**: Redis 7.x (Transition state tracking)
 - **Messaging**: RabbitMQ via MassTransit
-- **Templates**: Configurable onboarding templates per department
+- **API Documentation**: OpenAPI 3.1 + Scalar UI
+- **Observability**: OpenTelemetry (Metrics, Traces, Logging)
 
-## Getting Started
+---
+
+## ⚖️ Constitution Rules
+
+This service strictly adheres to the platform development mandates:
+
+### Banned Libraries
+To maintain high performance and low complexity, the following are **NOT** used:
+- ❌ **AutoMapper**: Explicit manual mapping only.
+- ❌ **FluentValidation**: Standard Data Annotations (`[Required]`, `[EmailAddress]`) only.
+- ❌ **FluentAssertions**: Standard xUnit `Assert` methods only.
+- ❌ **In-memory Test DB**: All integration tests use **Testcontainers** with real PostgreSQL 18.
+
+### Mandatory Practices
+- ✅ **TreatWarningsAsErrors**: Enabled in all `.csproj` files.
+- ✅ **XML Documentation**: Required on all public methods and properties.
+- ✅ **No Secrets in Code**: All sensitive configuration injected via environment variables.
+- ✅ **No Test Config in Program.cs**: Test configuration in test fixtures only.
+- ✅ **IAM Integration**: Self-registers permissions with the IAM Service using GCP-style naming: `{service}.{resource}.{action}`.
+
+---
+
+## ✨ Key Features
+
+- **Automated Onboarding**: Intelligent checklist generation and progress tracking triggered by new hire events.
+- **Workflow Offboarding**: Coordinated departure procedures including equipment recovery, exit interviews, and access revocation.
+- **Cross-Departmental Tasking**: Automated assignment and monitoring of tasks across IT, Facilities, and Finance.
+- **Template Engine**: Dynamic template management for onboarding/offboarding per department or seniority level.
+- **Real-time Status Boards**: High-visibility progress tracking for HR and managers to ensure friction-less transitions.
+
+---
+
+## 🚀 Quick Start
 
 ### Prerequisites
-
 - .NET 10.0 SDK
-- PostgreSQL 18
-- Docker (optional, for Redis and RabbitMQ)
+- Docker Desktop (for infrastructure)
+- PostgreSQL 18 (Alpine)
 
-### Local Development
+### Local Development Setup
 
 1. **Clone the repository**
-   ```bash
-   git clone https://github.com/MALIEV-Co-Ltd/Maliev.LifecycleService.git
-   ```
-
-2. **Run database migrations**
-   ```bash
-   dotnet ef database update --project Maliev.LifecycleService.Infrastructure --startup-project Maliev.LifecycleService.Api
-   ```
-
-3. **Run the service**
-   ```bash
-   dotnet run --project Maliev.LifecycleService.Api
-   ```
-
-   The service will be available at `https://localhost:7244` or `http://localhost:5087`.
-
-## API Endpoints
-
-### Onboarding
-
-```
-POST /lifecycle/v1/employees/{employeeId}/onboarding/start - Initiate onboarding
-GET  /lifecycle/v1/employees/{employeeId}/onboarding/status - View progress
-GET  /lifecycle/v1/onboarding/pending - List all active onboardings
-PUT  /lifecycle/v1/onboarding-items/{itemId}/complete - Mark task as done
+```bash
+git clone https://github.com/ORGANIZATION/Maliev.LifecycleService.git
+cd Maliev.LifecycleService
 ```
 
-### Offboarding
-
-```
-POST /lifecycle/v1/employees/{employeeId}/offboarding/start - Initiate offboarding
-GET  /lifecycle/v1/employees/{employeeId}/offboarding/status - View progress
-PUT  /lifecycle/v1/offboarding-tasks/{taskId}/complete - Mark task as done
+2. **Spin up Infrastructure**
+```bash
+docker run --name lifecycle-db -e POSTGRES_PASSWORD=YOUR_PASSWORD -p 5432:5432 -d postgres:18-alpine
+docker run --name lifecycle-redis -p 6379:6379 -d redis:7-alpine
 ```
 
-## Integration Events Published
+3. **Configure Environment**
+```powershell
+# Windows PowerShell
+$env:ConnectionStrings__LifecycleDbContext="YOUR_POSTGRES_CONNECTION_STRING"
+$env:ConnectionStrings__Cache="YOUR_REDIS_CONNECTION_STRING"
+```
 
-- `OnboardingStartedEvent` - Triggered when a new onboarding begins.
-- `OffboardingStartedEvent` - Triggered when a new offboarding begins.
+4. **Apply Migrations & Run**
+```bash
+dotnet ef database update --project Maliev.LifecycleService.Infrastructure --startup-project Maliev.LifecycleService.Api
+dotnet run --project Maliev.LifecycleService.Api
+```
 
-## Integration Events Consumed
+The service will be available at `http://localhost:5000/lifecycle`. Access the interactive documentation at `http://localhost:5000/lifecycle/scalar`.
 
-- `EmployeeCreatedIntegrationEvent` - Automatically starts onboarding using department templates.
-- `EmployeeTerminatedIntegrationEvent` - Automatically starts offboarding procedures.
+---
 
-## License
+## 📡 API Endpoints
 
-Copyright © 2025 Maliev Co. Ltd. All rights reserved.
+All endpoints are prefixed with `/lifecycle/v1/`.
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/employees/{id}/onboarding/start` | Manually initiate onboarding |
+| GET | `/employees/{id}/onboarding/status` | Current onboarding progress |
+| PUT | `/onboarding-items/{id}/complete` | Mark a specific task as completed |
+| GET | `/onboarding/pending` | List all active transitions |
+
+---
+
+## 🏥 Health & Monitoring
+
+Standardized health probes for Kubernetes orchestration:
+- **Liveness**: `GET /lifecycle/liveness`
+- **Readiness**: `GET /lifecycle/readiness` (Checks DB and Redis connectivity)
+- **Metrics**: `GET /lifecycle/metrics` (Prometheus format)
+
+---
+
+## 🧪 Testing
+
+We prioritize reliable tests over mock-heavy unit tests.
+
+```bash
+# Run all tests using Testcontainers
+dotnet test --verbosity normal
+```
+
+- **Integration Tests**: Use real PostgreSQL 18 containers.
+- **Contract Tests**: Ensure API stability for consumers.
+
+---
+
+## 📦 Deployment
+
+Infrastructure management is handled via GitOps patterns.
+
+- **Docker Image**: `REGION-docker.pkg.dev/PROJECT_ID/REPOSITORY/maliev-lifecycle-service:{sha}`
+- **Environments**: Development, Staging, Production
+
+---
+
+## 📄 License
+
+Proprietary - © 2025 MALIEV Co., Ltd. All rights reserved.
