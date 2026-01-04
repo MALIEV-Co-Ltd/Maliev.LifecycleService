@@ -81,6 +81,25 @@ public class CompleteOnboardingItemCommandHandler
 
         await _repository.UpdateAsync(checklist, cancellationToken);
 
+        // Publish LifecycleTaskCompletedEvent
+        await _eventPublisher.PublishAsync(new Maliev.MessagingContracts.Generated.LifecycleTaskCompletedEvent(
+            MessageId: Guid.NewGuid(),
+            MessageName: nameof(Maliev.MessagingContracts.Generated.LifecycleTaskCompletedEvent),
+            MessageType: Maliev.MessagingContracts.Generated.MessageType.Event,
+            MessageVersion: "1.0",
+            PublishedBy: "LifecycleService",
+            ConsumedBy: Array.Empty<string>(),
+            CorrelationId: Guid.NewGuid(),
+            CausationId: null,
+            OccurredAtUtc: DateTimeOffset.UtcNow,
+            IsPublic: false,
+            Payload: new Maliev.MessagingContracts.Generated.LifecycleTaskCompletedEventPayload(
+                TaskId: item.Id,
+                EmployeeId: checklist.EmployeeId,
+                CompletedDate: item.CompletedDate.Value
+            )
+        ), cancellationToken);
+
         await _auditLogService.LogAsync(
             "OnboardingItem", 
             item.Id, 
