@@ -62,7 +62,7 @@ public class OnboardingController : ControllerBase
             request.StartDate,
             request.TemplateId,
             userId), ct);
-        
+
         return CreatedAtAction(nameof(GetStatus), new { employeeId }, new { id });
     }
 

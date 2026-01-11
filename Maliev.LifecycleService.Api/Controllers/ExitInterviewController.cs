@@ -38,11 +38,18 @@ public class ExitInterviewController : ControllerBase
     /// <param name="ct">The cancellation token.</param>
     /// <returns>The exit interview information if found.</returns>
     [HttpGet("employees/{employeeId}/exit-interview")]
-    [Authorize(Policy = LifecyclePermissions.Admin)] // Restricted access as per US4
     public async Task<IActionResult> Get(Guid employeeId, CancellationToken ct)
     {
         var result = await _getHandler.HandleAsync(new GetExitInterviewQuery(employeeId), ct);
         if (result == null) return NotFound();
+
+        // FR-013b: Restrict access to HR admins and the user who conducted the interview
+        var userId = GetUserId();
+        if (!User.IsInRole("Admin") && result.ConductedBy != userId)
+        {
+            return Forbid();
+        }
+
         return Ok(result);
     }
 
@@ -69,7 +76,7 @@ public class ExitInterviewController : ControllerBase
             request.ImprovementSuggestions,
             request.WouldRecommendCompany,
             userId), ct);
-        
+
         return CreatedAtAction(nameof(Get), new { employeeId }, new { id });
     }
 
