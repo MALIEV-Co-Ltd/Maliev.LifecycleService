@@ -13,6 +13,9 @@ public class ExitInterviewControllerTests : BaseIntegrationTest
 {
     public ExitInterviewControllerTests(TestUtilities.LifecycleTestWebApplicationFactory factory) : base(factory)
     {
+        // Ensure test user has Admin role for these tests
+        var token = factory.CreateTestToken("test-user", new[] { "Admin", "LifecycleService.Admin", "LifecycleService.Manage" });
+        Client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
     }
 
     [Fact]
