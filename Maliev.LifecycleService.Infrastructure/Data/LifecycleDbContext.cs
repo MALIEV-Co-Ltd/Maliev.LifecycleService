@@ -1,5 +1,6 @@
 using Maliev.LifecycleService.Domain.Entities;
 using Maliev.LifecycleService.Infrastructure.Data.Configurations;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
 namespace Maliev.LifecycleService.Infrastructure.Data;
@@ -62,8 +63,6 @@ public class LifecycleDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        SnakeCaseNamingHelper.ApplySnakeCaseNaming(modelBuilder);
-
         modelBuilder.ApplyConfiguration(new AuditLogConfiguration());
         modelBuilder.ApplyConfiguration(new OnboardingChecklistConfiguration());
         modelBuilder.ApplyConfiguration(new OnboardingItemConfiguration());
@@ -72,5 +71,13 @@ public class LifecycleDbContext : DbContext
         modelBuilder.ApplyConfiguration(new OffboardingChecklistConfiguration());
         modelBuilder.ApplyConfiguration(new OffboardingTaskConfiguration());
         modelBuilder.ApplyConfiguration(new ExitInterviewConfiguration());
+
+        // MassTransit Outbox configuration
+        modelBuilder.AddInboxStateEntity();
+        modelBuilder.AddOutboxMessageEntity();
+        modelBuilder.AddOutboxStateEntity();
+
+        // Apply snake_case naming last to catch all configurations
+        SnakeCaseNamingHelper.ApplySnakeCaseNaming(modelBuilder);
     }
 }

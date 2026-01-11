@@ -40,12 +40,12 @@ public class AccessRevocationBackgroundService : BackgroundService
 
                 // In a real scenario, we might want to track if revocation was already sent.
                 var pending = await repository.GetPendingAsync(0, 100, stoppingToken);
-                
+
                 foreach (var checklist in pending)
                 {
                     if (checklist.TerminationDate.Date <= DateTime.UtcNow.Date)
                     {
-                        _logger.LogInformation("Found active offboarding for employee {EmployeeId} with termination date {Date}", 
+                        _logger.LogInformation("Found active offboarding for employee {EmployeeId} with termination date {Date}",
                             checklist.EmployeeId, checklist.TerminationDate);
                     }
                 }

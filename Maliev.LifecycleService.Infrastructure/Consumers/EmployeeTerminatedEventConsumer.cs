@@ -1,6 +1,7 @@
 using Maliev.MessagingContracts.Generated;
 using Maliev.LifecycleService.Application.Interfaces;
 using Maliev.LifecycleService.Domain.Entities;
+using Maliev.LifecycleService.Domain.Enums;
 using DomainEvents = Maliev.LifecycleService.Domain.Events;
 using MassTransit;
 using Microsoft.Extensions.Logging;
@@ -55,7 +56,20 @@ public class EmployeeTerminatedEventConsumer : IConsumer<EmployeeTerminatedEvent
             Id = Guid.NewGuid(),
             EmployeeId = payload.EmployeeId,
             TerminationDate = payload.TerminationDate.UtcDateTime,
+            TerminationReason = payload.TerminationReason ?? "Terminated",
+            EligibleForRehire = payload.EligibleForRehire,
+            Status = OffboardingStatus.NotStarted,
+            PaycheckReleaseBlocked = true,
             CreatedDate = DateTime.UtcNow
+        };
+
+        // Add default offboarding tasks
+        checklist.Tasks = new List<OffboardingTask>
+        {
+            new() { Title = "Revoke Network Access", Category = TaskCategory.ITAccess, IsPaycheckBlocker = true, SortOrder = 1 },
+            new() { Title = "Collect Company Equipment", Category = TaskCategory.EquipmentReturn, IsPaycheckBlocker = true, SortOrder = 2 },
+            new() { Title = "Conduct Exit Interview", Category = TaskCategory.Documentation, IsPaycheckBlocker = false, SortOrder = 3 },
+            new() { Title = "Final Payroll Processing", Category = TaskCategory.Financial, IsPaycheckBlocker = true, SortOrder = 4 }
         };
 
         await _offboardingRepository.AddAsync(checklist);

@@ -39,7 +39,7 @@ public class OnboardingReminderBackgroundService : BackgroundService
                 var metrics = scope.ServiceProvider.GetRequiredService<ILifecycleMetrics>();
 
                 var pendingChecklists = await repository.GetPendingAsync(0, 1000, stoppingToken);
-                
+
                 foreach (var checklist in pendingChecklists)
                 {
                     var fullChecklist = await repository.GetByIdWithItemsAsync(checklist.Id, stoppingToken);

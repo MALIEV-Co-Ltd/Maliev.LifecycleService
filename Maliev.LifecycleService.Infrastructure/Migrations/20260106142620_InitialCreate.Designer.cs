@@ -9,11 +9,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Maliev.LifecycleService.Infrastructure.Data.Migrations
+namespace Maliev.LifecycleService.Infrastructure.Migrations
 {
     [DbContext(typeof(LifecycleDbContext))]
-    [Migration("20251229060628_AddExitInterviewTable")]
-    partial class AddExitInterviewTable
+    [Migration("20260106142620_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

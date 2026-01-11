@@ -14,10 +14,10 @@ public class LifecycleMetrics : ILifecycleMetrics
     private readonly Counter<long> _offboardingCompletedCounter;
     private readonly Counter<long> _tasksOverdueCounter;
     private readonly Counter<long> _exitInterviewsRecordedCounter;
-    
+
     private readonly Histogram<double> _onboardingDurationHistogram;
     private readonly Histogram<double> _offboardingDurationHistogram;
-    
+
     private readonly Counter<long> _templateCacheHitCounter;
     private readonly Counter<long> _templateCacheMissCounter;
 
