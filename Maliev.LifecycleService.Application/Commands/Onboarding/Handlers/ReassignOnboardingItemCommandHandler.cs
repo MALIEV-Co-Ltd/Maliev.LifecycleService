@@ -43,12 +43,12 @@ public class ReassignOnboardingItemCommandHandler
         await _repository.UpdateAsync(item.Checklist, cancellationToken);
 
         await _auditLogService.LogAsync(
-            "OnboardingItem", 
-            item.Id, 
-            "Reassigned", 
-            command.UserId, 
-            beforeState, 
-            new { item.AssignedTo }, 
+            "OnboardingItem",
+            item.Id,
+            "Reassigned",
+            command.UserId,
+            beforeState,
+            new { item.AssignedTo },
             cancellationToken);
     }
 }

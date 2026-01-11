@@ -11,11 +11,7 @@ namespace Maliev.LifecycleService.Application.Services;
 public class AuditLogService : IAuditLogService
 {
     private readonly IAuditLogRepository _repository;
-    private static readonly JsonSerializerOptions _jsonOptions = new()
-    {
-        ReferenceHandler = ReferenceHandler.IgnoreCycles,
-        WriteIndented = false
-    };
+    private readonly JsonSerializerOptions _jsonOptions;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AuditLogService"/> class.
@@ -24,11 +20,18 @@ public class AuditLogService : IAuditLogService
     public AuditLogService(IAuditLogRepository repository)
     {
         _repository = repository;
+        _jsonOptions = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+            ReferenceHandler = ReferenceHandler.IgnoreCycles,
+            WriteIndented = false
+        };
     }
 
     /// <inheritdoc/>
     public async Task LogAsync(string entityType, Guid entityId, string action, Guid userId, object? beforeState = null, object? afterState = null, CancellationToken cancellationToken = default)
     {
+        // Simple projection to avoid deep graphs in audit log
         var log = new AuditLog
         {
             Id = Guid.NewGuid(),

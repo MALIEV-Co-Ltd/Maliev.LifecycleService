@@ -23,7 +23,7 @@ public class CompleteOnboardingItemCommandHandler
     /// <param name="eventPublisher">The event publisher.</param>
     /// <param name="metrics">The business metrics service.</param>
     public CompleteOnboardingItemCommandHandler(
-        IOnboardingRepository repository, 
+        IOnboardingRepository repository,
         IAuditLogService auditLogService,
         IEventPublisher eventPublisher,
         ILifecycleMetrics metrics)
@@ -55,7 +55,8 @@ public class CompleteOnboardingItemCommandHandler
             throw new ItemAlreadyCompletedException(command.ItemId);
         }
 
-        var beforeState = item;
+        // Capture a snapshot of the state before modification
+        var beforeState = new { item.IsCompleted, item.CompletedDate, item.CompletedBy, item.Notes };
 
         item.IsCompleted = true;
         item.CompletedDate = DateTime.UtcNow;
@@ -64,17 +65,19 @@ public class CompleteOnboardingItemCommandHandler
 
         var checklist = item.Checklist;
         checklist.CompletedItems++;
-        
+
         if (checklist.Status == OnboardingStatus.NotStarted)
         {
             checklist.Status = OnboardingStatus.InProgress;
         }
 
-        if (checklist.CompletedItems >= checklist.TotalItems)
+        if (checklist.TotalItems > 0 && checklist.CompletedItems >= checklist.TotalItems)
         {
             checklist.Status = OnboardingStatus.Completed;
             checklist.CompletedDate = DateTime.UtcNow;
-            
+
+            var duration = (checklist.CompletedDate.Value - checklist.CreatedDate).TotalDays;
+            _metrics.RecordOnboardingDuration(duration);
             _metrics.RecordOnboardingCompleted();
             await _eventPublisher.PublishAsync(new OnboardingCompletedEvent(checklist.Id, checklist.EmployeeId, checklist.CompletedDate.Value), cancellationToken);
         }
@@ -101,12 +104,12 @@ public class CompleteOnboardingItemCommandHandler
         ), cancellationToken);
 
         await _auditLogService.LogAsync(
-            "OnboardingItem", 
-            item.Id, 
-            "Completed", 
-            command.UserId, 
-            beforeState, 
-            item, 
+            "OnboardingItem",
+            item.Id,
+            "Completed",
+            command.UserId,
+            beforeState,
+            item,
             cancellationToken);
     }
 }

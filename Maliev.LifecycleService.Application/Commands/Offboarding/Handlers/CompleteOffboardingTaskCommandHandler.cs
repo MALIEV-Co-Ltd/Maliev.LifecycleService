@@ -55,7 +55,8 @@ public class CompleteOffboardingTaskCommandHandler
 
         if (task.IsCompleted) return;
 
-        var beforeState = task;
+        // Capture a snapshot of the state before modification to avoid reference update in audit log
+        var beforeState = new { task.IsCompleted, task.CompletedDate, task.CompletedBy, task.Notes };
 
         task.IsCompleted = true;
         task.CompletedDate = DateTime.UtcNow;
@@ -63,7 +64,7 @@ public class CompleteOffboardingTaskCommandHandler
         task.Notes = command.Notes;
 
         var checklist = task.Checklist;
-        
+
         if (checklist.Status == OffboardingStatus.NotStarted)
         {
             checklist.Status = OffboardingStatus.InProgress;
@@ -72,15 +73,17 @@ public class CompleteOffboardingTaskCommandHandler
         // Update paycheck blocking flag
         checklist.PaycheckReleaseBlocked = _paycheckBlockingService.CalculatePaycheckBlocked(checklist);
 
-        // Check if all tasks are completed
-        if (checklist.Tasks.All(t => t.IsCompleted))
+        // Check if all tasks are completed - ensure Tasks collection is loaded and not empty
+        if (checklist.Tasks.Any() && checklist.Tasks.All(t => t.IsCompleted))
         {
             checklist.Status = OffboardingStatus.Completed;
             checklist.CompletedDate = DateTime.UtcNow;
-            
+
+            var duration = (checklist.CompletedDate.Value - checklist.CreatedDate).TotalDays;
+            _metrics.RecordOffboardingDuration(duration);
             _metrics.RecordOffboardingCompleted();
             await _eventPublisher.PublishAsync(new OffboardingCompletedEvent(checklist.Id, checklist.EmployeeId, checklist.CompletedDate.Value), cancellationToken);
-            
+
             // Trigger access revocation if not already triggered by a specific task
             await _eventPublisher.PublishAsync(new AccessRevocationRequiredEvent(checklist.EmployeeId, DateTime.UtcNow, "Offboarding completed"), cancellationToken);
         }
