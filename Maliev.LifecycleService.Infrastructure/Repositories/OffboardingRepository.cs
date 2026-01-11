@@ -68,6 +68,7 @@ public class OffboardingRepository : IOffboardingRepository
     {
         return await _context.OffboardingTasks
             .Include(x => x.Checklist)
+            .ThenInclude(x => x.Tasks)
             .FirstOrDefaultAsync(x => x.Id == taskId, cancellationToken);
     }
 }

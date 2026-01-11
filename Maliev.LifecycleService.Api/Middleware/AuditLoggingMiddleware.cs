@@ -31,8 +31,8 @@ public class AuditLoggingMiddleware
     public async Task InvokeAsync(HttpContext context, IAuditLogService auditLogService)
     {
         // We only audit state-changing operations (POST, PUT, DELETE)
-        if (context.Request.Method == HttpMethods.Post || 
-            context.Request.Method == HttpMethods.Put || 
+        if (context.Request.Method == HttpMethods.Post ||
+            context.Request.Method == HttpMethods.Put ||
             context.Request.Method == HttpMethods.Delete)
         {
             var userIdString = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -42,7 +42,7 @@ public class AuditLoggingMiddleware
                 // Note: Detailed entity auditing is usually done in command handlers
                 // where we have access to before/after state.
                 // This middleware can log the API call itself.
-                _logger.LogInformation("Auditable request: {Method} {Path} by user {UserId}", 
+                _logger.LogInformation("Auditable request: {Method} {Path} by user {UserId}",
                     context.Request.Method, context.Request.Path, userId);
             }
         }

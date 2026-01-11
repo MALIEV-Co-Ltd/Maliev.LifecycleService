@@ -27,9 +27,9 @@ public class UndoRevokeAccessCommandHandler
     public async Task HandleAsync(UndoRevokeAccessCommand command, CancellationToken cancellationToken = default)
     {
         _logger.LogWarning("UNDO: Restoring system access for employee {EmployeeId}", command.EmployeeId);
-        
+
         // Logic to restore access or notify security
-        
+
         await Task.CompletedTask;
     }
 }

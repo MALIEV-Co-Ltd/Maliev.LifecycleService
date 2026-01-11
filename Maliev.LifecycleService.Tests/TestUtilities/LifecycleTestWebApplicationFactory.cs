@@ -33,20 +33,17 @@ public class LifecycleTestWebApplicationFactory : WebApplicationFactory<Program>
 
     private readonly RSA _testRsa = RSA.Create(2048);
 
-    public string CreateTestToken(string userId = "test-user", string[]? roles = null)
+    public string CreateTestToken(string userId = "test-user", IEnumerable<Claim>? claims = null)
     {
-        var claims = new List<Claim>
+        var allClaims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, userId),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         };
 
-        if (roles != null)
+        if (claims != null)
         {
-            foreach (var role in roles)
-            {
-                claims.Add(new Claim(ClaimTypes.Role, role));
-            }
+            allClaims.AddRange(claims);
         }
 
         var key = new RsaSecurityKey(_testRsa);
@@ -55,7 +52,7 @@ public class LifecycleTestWebApplicationFactory : WebApplicationFactory<Program>
         var token = new JwtSecurityToken(
             issuer: "test-issuer",
             audience: "test-audience",
-            claims: claims,
+            claims: allClaims,
             expires: DateTime.UtcNow.AddHours(1),
             signingCredentials: creds
         );

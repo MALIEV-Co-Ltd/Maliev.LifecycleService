@@ -101,7 +101,7 @@ public class TemplatesController : ControllerBase
     {
         var userId = GetUserId();
         if (id != command.Id) return BadRequest("ID mismatch");
-        
+
         await _updateHandler.HandleAsync(command with { UserId = userId }, ct);
         return NoContent();
     }

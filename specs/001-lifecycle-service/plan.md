@@ -794,7 +794,7 @@ builder.AddStandardMiddleware(options =>
 {
     options.EnableRequestLogging = true;
 });
-builder.AddServiceMeters("lifecycle-service");
+builder.AddServiceMeters("lifecycle-meter");
 
 // 2. Database & Cache
 builder.AddRedisDistributedCache(instanceName: "lifecycle:");

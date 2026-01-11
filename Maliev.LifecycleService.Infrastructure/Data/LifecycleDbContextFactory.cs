@@ -13,10 +13,12 @@ public class LifecycleDbContextFactory : IDesignTimeDbContextFactory<LifecycleDb
     public LifecycleDbContext CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<LifecycleDbContext>();
-        
-        // This is only for design time (migrations)
-        // In real execution, the connection string comes from configuration/secrets
-        optionsBuilder.UseNpgsql("Host=localhost;Database=lifecycledb;Username=postgres;Password=postgres",
+
+        // For design-time (migrations), prefer environment variable to avoid hardcoded secrets
+        var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings:LifecycleDbContext")
+            ?? "Host=localhost;Database=lifecycledb;Username=postgres;Password=postgres";
+
+        optionsBuilder.UseNpgsql(connectionString,
             x => x.MigrationsHistoryTable("__EFMigrationsHistory", "public"));
 
         return new LifecycleDbContext(optionsBuilder.Options);

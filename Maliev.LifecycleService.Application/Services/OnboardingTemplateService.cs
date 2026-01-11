@@ -41,8 +41,8 @@ public class OnboardingTemplateService : IOnboardingTemplateService
         // 2. Try DB
         var template = await _repository.GetByDepartmentIdAsync(departmentId, cancellationToken);
 
-        // 3. Set Cache if found
-        if (template != null)
+        // 3. Set Cache only if we found an exact match for the department to avoid pollution
+        if (template != null && template.DepartmentId == departmentId)
         {
             await _cache.SetAsync(departmentId, template, cancellationToken);
         }

@@ -1,5 +1,6 @@
 using Maliev.Aspire.ServiceDefaults.IAM;
 using Maliev.LifecycleService.Domain.Authorization;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Maliev.LifecycleService.Infrastructure.IAM;
@@ -12,23 +13,23 @@ public class LifecycleIAMRegistrationService : IAMRegistrationService
     /// <summary>
     /// Initializes a new instance of the <see cref="LifecycleIAMRegistrationService"/> class.
     /// </summary>
-    /// <param name="httpClientFactory">The HTTP client factory.</param>
+    /// <param name="configuration">The application configuration.</param>
     /// <param name="logger">The logger.</param>
     public LifecycleIAMRegistrationService(
-        IHttpClientFactory httpClientFactory,
+        IConfiguration configuration,
         ILogger<LifecycleIAMRegistrationService> logger)
-        : base(httpClientFactory, logger, "LifecycleService")
+        : base(configuration, logger, "lifecycle")
     {
     }
 
     /// <inheritdoc/>
     protected override IEnumerable<PermissionRegistration> GetPermissions()
     {
-        return new List<PermissionRegistration>
+        return LifecyclePermissions.All.Select(p => new PermissionRegistration
         {
-            new PermissionRegistration { PermissionId = LifecyclePermissions.Manage, Description = "Manage onboarding/offboarding workflows" },
-            new PermissionRegistration { PermissionId = LifecyclePermissions.Admin, Description = "Manage templates and administrative functions" }
-        };
+            PermissionId = p.Key,
+            Description = p.Value
+        });
     }
 
     /// <inheritdoc/>
@@ -51,3 +52,4 @@ public class LifecycleIAMRegistrationService : IAMRegistrationService
         };
     }
 }
+

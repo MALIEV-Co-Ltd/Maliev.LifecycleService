@@ -1,3 +1,4 @@
+using Maliev.Aspire.ServiceDefaults;
 using Maliev.Aspire.ServiceDefaults.IAM;
 using Maliev.LifecycleService.Application.Commands.Onboarding.Handlers;
 using Maliev.LifecycleService.Application.Commands.Offboarding.Handlers;
@@ -31,7 +32,7 @@ builder.AddStandardMiddleware(options =>
 {
     options.EnableRequestLogging = true;
 });
-builder.AddServiceMeters("lifecycle-service");
+builder.AddServiceMeters("lifecycle-meter");
 
 // --- 3. Data & Cache ---
 builder.AddPostgresDbContext<LifecycleDbContext>(connectionName: "LifecycleDbContext");
@@ -41,6 +42,12 @@ builder.AddRedisDistributedCache(instanceName: "lifecycle:");
 builder.AddMassTransitWithRabbitMq(
     configure: x =>
     {
+        x.AddEntityFrameworkOutbox<LifecycleDbContext>(o =>
+        {
+            o.UsePostgres();
+            o.UseBusOutbox();
+        });
+
         x.AddConsumer<EmployeeCreatedEventConsumer>();
         x.AddConsumer<EmployeeTerminatedEventConsumer>();
         x.AddConsumer<UndoRevokeAccessConsumer>();
@@ -56,7 +63,10 @@ builder.AddMassTransitWithRabbitMq(
 
 // --- 5. Security ---
 builder.AddJwtAuthentication();
-builder.Services.AddIAMRegistration<LifecycleIAMRegistrationService>();
+
+// IAM Registration
+builder.AddIAMServiceClient("lifecycle");
+builder.Services.AddIAMRegistration<LifecycleIAMRegistrationService>("lifecycle");
 
 // --- 6. API Configuration ---
 builder.AddDefaultCors();
@@ -119,21 +129,16 @@ builder.Services.AddHostedService<AccessRevocationBackgroundService>();
 builder.Services.AddHostedService<OnboardingReminderBackgroundService>();
 
 var app = builder.Build();
-var logger = app.Services.GetRequiredService<ILogger<Program>>();
 
 // --- 8. Database Migrations ---
-try
-{
-    await app.MigrateDatabaseAsync<LifecycleDbContext>();
-}
-catch (Exception ex)
-{
-    logger.LogError(ex, "Database migration failed");
-}
+await app.MigrateDatabaseAsync<LifecycleDbContext>();
 
 // --- 9. Middleware Pipeline ---
 app.UseStandardMiddleware();
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseRouting();
 app.UseCors();
 app.UseAuthentication();

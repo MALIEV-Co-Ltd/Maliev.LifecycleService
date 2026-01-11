@@ -45,22 +45,46 @@ public class UpdateTemplateCommandHandler
         template.IsActive = command.IsActive;
         template.ModifiedDate = DateTime.UtcNow;
 
-        // Simplify item update: clear and rebuild for MVP
-        // In real app, we would match IDs to update/delete/add
-        template.Items.Clear();
-        foreach (var item in command.Items)
+        // Synchronize items to preserve entity identity
+        var commandItemIds = command.Items.Where(x => x.Id.HasValue).Select(x => x.Id!.Value).ToHashSet();
+
+        // Remove items that are no longer in the command
+        var itemsToRemove = template.Items.Where(x => !commandItemIds.Contains(x.Id)).ToList();
+        foreach (var item in itemsToRemove)
         {
-            template.Items.Add(new OnboardingTemplateItem
+            template.Items.Remove(item);
+        }
+
+        // Update existing items and add new ones
+        foreach (var itemDto in command.Items)
+        {
+            if (itemDto.Id.HasValue)
             {
-                Id = item.Id ?? Guid.NewGuid(),
-                TemplateId = template.Id,
-                Title = item.Title,
-                Description = item.Description,
-                Category = item.Category,
-                DefaultAssigneeRole = item.DefaultAssigneeRole,
-                DaysDue = item.DaysDue,
-                SortOrder = item.SortOrder
-            });
+                var existingItem = template.Items.FirstOrDefault(x => x.Id == itemDto.Id.Value);
+                if (existingItem != null)
+                {
+                    existingItem.Title = itemDto.Title;
+                    existingItem.Description = itemDto.Description;
+                    existingItem.Category = itemDto.Category;
+                    existingItem.DefaultAssigneeRole = itemDto.DefaultAssigneeRole;
+                    existingItem.DaysDue = itemDto.DaysDue;
+                    existingItem.SortOrder = itemDto.SortOrder;
+                }
+            }
+            else
+            {
+                template.Items.Add(new OnboardingTemplateItem
+                {
+                    Id = Guid.NewGuid(),
+                    TemplateId = template.Id,
+                    Title = itemDto.Title,
+                    Description = itemDto.Description,
+                    Category = itemDto.Category,
+                    DefaultAssigneeRole = itemDto.DefaultAssigneeRole,
+                    DaysDue = itemDto.DaysDue,
+                    SortOrder = itemDto.SortOrder
+                });
+            }
         }
 
         await _repository.UpdateAsync(template, cancellationToken);

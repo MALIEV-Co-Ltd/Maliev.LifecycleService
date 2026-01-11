@@ -68,6 +68,7 @@ public class OnboardingRepository : IOnboardingRepository
     {
         return await _context.OnboardingItems
             .Include(x => x.Checklist)
+            .ThenInclude(x => x.Items)
             .FirstOrDefaultAsync(x => x.Id == itemId, cancellationToken);
     }
 }

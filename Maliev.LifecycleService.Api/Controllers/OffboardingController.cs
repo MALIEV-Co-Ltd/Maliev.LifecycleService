@@ -63,7 +63,7 @@ public class OffboardingController : ControllerBase
             request.TerminationReason,
             request.EligibleForRehire,
             userId), ct);
-        
+
         return CreatedAtAction(nameof(GetStatus), new { employeeId }, new { id });
     }
 

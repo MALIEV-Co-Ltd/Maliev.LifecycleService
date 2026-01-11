@@ -31,7 +31,7 @@ public class RevokeAccessCommandHandler : IRequestHandler<RevokeAccessCommand, b
     /// <inheritdoc/>
     public async Task<bool> Handle(RevokeAccessCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Revoking access for employee {EmployeeId} (Correlation: {CorrelationId})", 
+        _logger.LogInformation("Revoking access for employee {EmployeeId} (Correlation: {CorrelationId})",
             request.EmployeeId, request.CorrelationId);
 
         // Logic to revoke system access via IAM or other mechanisms

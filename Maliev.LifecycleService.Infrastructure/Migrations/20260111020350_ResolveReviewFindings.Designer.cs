@@ -9,11 +9,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Maliev.LifecycleService.Infrastructure.Data.Migrations
+namespace Maliev.LifecycleService.Infrastructure.Migrations
 {
     [DbContext(typeof(LifecycleDbContext))]
-    [Migration("20251229055655_AddOnboardingTables")]
-    partial class AddOnboardingTables
+    [Migration("20260111020350_ResolveReviewFindings")]
+    partial class ResolveReviewFindings
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -68,11 +68,196 @@ namespace Maliev.LifecycleService.Infrastructure.Data.Migrations
                     b.HasKey("Id")
                         .HasName("pk_audit_logs");
 
-                    b.HasIndex("EntityId");
+                    b.HasIndex("EntityId")
+                        .HasDatabaseName("ix_audit_logs_entity_id");
 
-                    b.HasIndex("Timestamp");
+                    b.HasIndex("Timestamp")
+                        .HasDatabaseName("ix_audit_logs_timestamp");
 
                     b.ToTable("audit_logs", (string)null);
+                });
+
+            modelBuilder.Entity("Maliev.LifecycleService.Domain.Entities.ExitInterview", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<Guid>("ConductedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("conducted_by");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_date");
+
+                    b.Property<string>("FeedbackOnCompany")
+                        .HasColumnType("text")
+                        .HasColumnName("feedback_on_company");
+
+                    b.Property<string>("FeedbackOnManager")
+                        .HasColumnType("text")
+                        .HasColumnName("feedback_on_manager");
+
+                    b.Property<string>("FeedbackOnTeam")
+                        .HasColumnType("text")
+                        .HasColumnName("feedback_on_team");
+
+                    b.Property<string>("ImprovementSuggestions")
+                        .HasColumnType("text")
+                        .HasColumnName("improvement_suggestions");
+
+                    b.Property<DateTime>("InterviewDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("interview_date");
+
+                    b.Property<Guid>("OffboardingChecklistId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("offboarding_checklist_id");
+
+                    b.Property<string>("ReasonForLeaving")
+                        .HasColumnType("text")
+                        .HasColumnName("reason_for_leaving");
+
+                    b.Property<bool>("WouldRecommendCompany")
+                        .HasColumnType("boolean")
+                        .HasColumnName("would_recommend_company");
+
+                    b.HasKey("Id")
+                        .HasName("pk_exit_interviews");
+
+                    b.HasIndex("OffboardingChecklistId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_exit_interviews_offboarding_checklist_id");
+
+                    b.ToTable("exit_interviews", (string)null);
+                });
+
+            modelBuilder.Entity("Maliev.LifecycleService.Domain.Entities.OffboardingChecklist", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<DateTime?>("CompletedDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_date");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_date");
+
+                    b.Property<bool>("EligibleForRehire")
+                        .HasColumnType("boolean")
+                        .HasColumnName("eligible_for_rehire");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("employee_id");
+
+                    b.Property<DateTime?>("ModifiedDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("modified_date");
+
+                    b.Property<bool>("PaycheckReleaseBlocked")
+                        .HasColumnType("boolean")
+                        .HasColumnName("paycheck_release_blocked");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime>("TerminationDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("termination_date");
+
+                    b.Property<string>("TerminationReason")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("termination_reason");
+
+                    b.HasKey("Id")
+                        .HasName("pk_offboarding_checklists");
+
+                    b.HasIndex("EmployeeId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_offboarding_checklists_employee_id");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("ix_offboarding_checklists_status");
+
+                    b.ToTable("offboarding_checklists", (string)null);
+                });
+
+            modelBuilder.Entity("Maliev.LifecycleService.Domain.Entities.OffboardingTask", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<Guid?>("AssignedTo")
+                        .HasColumnType("uuid")
+                        .HasColumnName("assigned_to");
+
+                    b.Property<int>("Category")
+                        .HasColumnType("integer")
+                        .HasColumnName("category");
+
+                    b.Property<Guid?>("CompletedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("completed_by");
+
+                    b.Property<DateTime?>("CompletedDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_date");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_date");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_completed");
+
+                    b.Property<bool>("IsPaycheckBlocker")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_paycheck_blocker");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text")
+                        .HasColumnName("notes");
+
+                    b.Property<Guid>("OffboardingChecklistId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("offboarding_checklist_id");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("title");
+
+                    b.HasKey("Id")
+                        .HasName("pk_offboarding_tasks");
+
+                    b.HasIndex("OffboardingChecklistId")
+                        .HasDatabaseName("ix_offboarding_tasks_offboarding_checklist_id");
+
+                    b.ToTable("offboarding_tasks", (string)null);
                 });
 
             modelBuilder.Entity("Maliev.LifecycleService.Domain.Entities.OnboardingChecklist", b =>
@@ -119,9 +304,11 @@ namespace Maliev.LifecycleService.Infrastructure.Data.Migrations
                         .HasName("pk_onboarding_checklists");
 
                     b.HasIndex("EmployeeId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("ix_onboarding_checklists_employee_id");
 
-                    b.HasIndex("Status");
+                    b.HasIndex("Status")
+                        .HasDatabaseName("ix_onboarding_checklists_status");
 
                     b.ToTable("onboarding_checklists", (string)null);
                 });
@@ -187,7 +374,8 @@ namespace Maliev.LifecycleService.Infrastructure.Data.Migrations
                     b.HasKey("Id")
                         .HasName("pk_onboarding_items");
 
-                    b.HasIndex("AssignedTo");
+                    b.HasIndex("AssignedTo")
+                        .HasDatabaseName("ix_onboarding_items_assigned_to");
 
                     b.HasIndex("OnboardingChecklistId")
                         .HasDatabaseName("ix_onboarding_items_onboarding_checklist_id");
@@ -232,7 +420,8 @@ namespace Maliev.LifecycleService.Infrastructure.Data.Migrations
                     b.HasKey("Id")
                         .HasName("pk_onboarding_templates");
 
-                    b.HasIndex("DepartmentId");
+                    b.HasIndex("DepartmentId")
+                        .HasDatabaseName("ix_onboarding_templates_department_id");
 
                     b.ToTable("onboarding_templates", (string)null);
                 });
@@ -285,6 +474,30 @@ namespace Maliev.LifecycleService.Infrastructure.Data.Migrations
                     b.ToTable("onboarding_template_items", (string)null);
                 });
 
+            modelBuilder.Entity("Maliev.LifecycleService.Domain.Entities.ExitInterview", b =>
+                {
+                    b.HasOne("Maliev.LifecycleService.Domain.Entities.OffboardingChecklist", "OffboardingChecklist")
+                        .WithOne()
+                        .HasForeignKey("Maliev.LifecycleService.Domain.Entities.ExitInterview", "OffboardingChecklistId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_exit_interviews_offboarding_checklists_offboarding_checklis~");
+
+                    b.Navigation("OffboardingChecklist");
+                });
+
+            modelBuilder.Entity("Maliev.LifecycleService.Domain.Entities.OffboardingTask", b =>
+                {
+                    b.HasOne("Maliev.LifecycleService.Domain.Entities.OffboardingChecklist", "Checklist")
+                        .WithMany("Tasks")
+                        .HasForeignKey("OffboardingChecklistId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_offboarding_tasks_offboarding_checklists_offboarding_checkl~");
+
+                    b.Navigation("Checklist");
+                });
+
             modelBuilder.Entity("Maliev.LifecycleService.Domain.Entities.OnboardingItem", b =>
                 {
                     b.HasOne("Maliev.LifecycleService.Domain.Entities.OnboardingChecklist", "Checklist")
@@ -307,6 +520,11 @@ namespace Maliev.LifecycleService.Infrastructure.Data.Migrations
                         .HasConstraintName("fk_onboarding_template_items_onboarding_templates_template_id");
 
                     b.Navigation("Template");
+                });
+
+            modelBuilder.Entity("Maliev.LifecycleService.Domain.Entities.OffboardingChecklist", b =>
+                {
+                    b.Navigation("Tasks");
                 });
 
             modelBuilder.Entity("Maliev.LifecycleService.Domain.Entities.OnboardingChecklist", b =>

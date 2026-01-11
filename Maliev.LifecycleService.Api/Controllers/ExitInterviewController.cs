@@ -43,6 +43,16 @@ public class ExitInterviewController : ControllerBase
     {
         var result = await _getHandler.HandleAsync(new GetExitInterviewQuery(employeeId), ct);
         if (result == null) return NotFound();
+
+        // The policy will handle the admin check. Add an additional check for the conductor.
+        var userId = GetUserId();
+        // Since we are using policy-based auth, we should check if the user has the permission or is the conductor.
+        // For simplicity in this context, we check the claim directly or assume the policy allows admins.
+        if (!User.HasClaim("permission", LifecyclePermissions.Admin) && result.ConductedBy != userId)
+        {
+            return Forbid();
+        }
+
         return Ok(result);
     }
 
@@ -69,7 +79,7 @@ public class ExitInterviewController : ControllerBase
             request.ImprovementSuggestions,
             request.WouldRecommendCompany,
             userId), ct);
-        
+
         return CreatedAtAction(nameof(Get), new { employeeId }, new { id });
     }
 
