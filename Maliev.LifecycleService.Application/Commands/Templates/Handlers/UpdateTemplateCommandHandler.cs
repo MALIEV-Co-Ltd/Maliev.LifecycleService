@@ -46,13 +46,16 @@ public class UpdateTemplateCommandHandler
         template.ModifiedDate = DateTime.UtcNow;
 
         // Synchronize items to preserve entity identity
-        var itemIds = command.Items.Where(x => x.Id.HasValue).Select(x => x.Id!.Value).ToList();
-        var itemsToRemove = template.Items.Where(x => !itemIds.Contains(x.Id)).ToList();
+        var commandItemIds = command.Items.Where(x => x.Id.HasValue).Select(x => x.Id!.Value).ToHashSet();
+
+        // Remove items that are no longer in the command
+        var itemsToRemove = template.Items.Where(x => !commandItemIds.Contains(x.Id)).ToList();
         foreach (var item in itemsToRemove)
         {
             template.Items.Remove(item);
         }
 
+        // Update existing items and add new ones
         foreach (var itemDto in command.Items)
         {
             if (itemDto.Id.HasValue)

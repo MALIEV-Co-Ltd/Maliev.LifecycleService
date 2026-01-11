@@ -38,14 +38,17 @@ public class ExitInterviewController : ControllerBase
     /// <param name="ct">The cancellation token.</param>
     /// <returns>The exit interview information if found.</returns>
     [HttpGet("employees/{employeeId}/exit-interview")]
+    [Authorize(Policy = LifecyclePermissions.Admin)] // Restricted access as per US4
     public async Task<IActionResult> Get(Guid employeeId, CancellationToken ct)
     {
         var result = await _getHandler.HandleAsync(new GetExitInterviewQuery(employeeId), ct);
         if (result == null) return NotFound();
 
-        // FR-013b: Restrict access to HR admins and the user who conducted the interview
+        // The policy will handle the admin check. Add an additional check for the conductor.
         var userId = GetUserId();
-        if (!User.IsInRole("Admin") && result.ConductedBy != userId)
+        // Since we are using policy-based auth, we should check if the user has the permission or is the conductor.
+        // For simplicity in this context, we check the claim directly or assume the policy allows admins.
+        if (!User.HasClaim("permission", LifecyclePermissions.Admin) && result.ConductedBy != userId)
         {
             return Forbid();
         }

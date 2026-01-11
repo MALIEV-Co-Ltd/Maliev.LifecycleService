@@ -71,7 +71,7 @@ public class CompleteOnboardingItemCommandHandler
             checklist.Status = OnboardingStatus.InProgress;
         }
 
-        if (checklist.TotalItems > 0 && checklist.CompletedItems >= checklist.TotalItems)
+        if (checklist.Items != null && checklist.TotalItems > 0 && checklist.CompletedItems >= checklist.TotalItems)
         {
             checklist.Status = OnboardingStatus.Completed;
             checklist.CompletedDate = DateTime.UtcNow;

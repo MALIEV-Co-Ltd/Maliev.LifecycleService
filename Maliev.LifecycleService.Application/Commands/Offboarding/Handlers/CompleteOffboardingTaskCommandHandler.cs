@@ -74,7 +74,7 @@ public class CompleteOffboardingTaskCommandHandler
         checklist.PaycheckReleaseBlocked = _paycheckBlockingService.CalculatePaycheckBlocked(checklist);
 
         // Check if all tasks are completed - ensure Tasks collection is loaded and not empty
-        if (checklist.Tasks.Any() && checklist.Tasks.All(t => t.IsCompleted))
+        if (checklist.Tasks != null && checklist.Tasks.Any() && checklist.Tasks.All(t => t.IsCompleted))
         {
             checklist.Status = OffboardingStatus.Completed;
             checklist.CompletedDate = DateTime.UtcNow;

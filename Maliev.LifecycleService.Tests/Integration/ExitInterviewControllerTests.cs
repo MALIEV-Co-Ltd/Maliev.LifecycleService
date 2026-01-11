@@ -13,8 +13,12 @@ public class ExitInterviewControllerTests : BaseIntegrationTest
 {
     public ExitInterviewControllerTests(TestUtilities.LifecycleTestWebApplicationFactory factory) : base(factory)
     {
-        // Ensure test user has Admin role for these tests
-        var token = factory.CreateTestToken("test-user", new[] { "Admin", "LifecycleService.Admin", "LifecycleService.Manage" });
+        // Ensure test user has Admin role and permission for these tests
+        var claims = new[] { 
+            new System.Security.Claims.Claim("permission", Maliev.LifecycleService.Domain.Authorization.LifecyclePermissions.Admin),
+            new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, "Admin")
+        };
+        var token = factory.CreateTestToken("test-user", claims);
         Client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
     }
 
