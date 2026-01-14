@@ -1,3 +1,4 @@
+#pragma warning disable CA1848 // For improved performance, use the LoggerMessage delegates
 using Maliev.Aspire.ServiceDefaults;
 using Maliev.Aspire.ServiceDefaults.IAM;
 using Maliev.LifecycleService.Application.Commands.Onboarding.Handlers;
