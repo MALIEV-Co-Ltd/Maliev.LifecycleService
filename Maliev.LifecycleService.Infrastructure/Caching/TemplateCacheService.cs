@@ -1,7 +1,7 @@
-using System.Text.Json;
 using Maliev.LifecycleService.Application.Interfaces;
 using Maliev.LifecycleService.Domain.Entities;
 using Microsoft.Extensions.Caching.Distributed;
+using System.Text.Json;
 
 namespace Maliev.LifecycleService.Infrastructure.Caching;
 

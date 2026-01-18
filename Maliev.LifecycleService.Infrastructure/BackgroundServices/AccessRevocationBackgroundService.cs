@@ -1,6 +1,4 @@
 using Maliev.LifecycleService.Application.Interfaces;
-using Maliev.LifecycleService.Domain.Enums;
-using Maliev.LifecycleService.Domain.Events;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

@@ -1,7 +1,6 @@
 using Maliev.LifecycleService.Application.Interfaces;
 using Maliev.LifecycleService.Domain.Entities;
-using Maliev.LifecycleService.Domain.Enums;
-using Maliev.LifecycleService.Domain.Events;
+using Maliev.MessagingContracts.Generated;
 
 namespace Maliev.LifecycleService.Application.Commands.Onboarding.Handlers;
 
@@ -100,7 +99,27 @@ public class StartOnboardingCommandHandler
         await _onboardingRepository.AddAsync(checklist, cancellationToken);
 
         _metrics.RecordOnboardingStarted();
-        await _eventPublisher.PublishAsync(new OnboardingStartedEvent(checklist.Id, checklist.EmployeeId, checklist.StartDate), cancellationToken);
+
+        var onboardingStartedEvent = new OnboardingStartedEvent
+        (
+            MessageId: Guid.NewGuid(),
+            MessageName: nameof(OnboardingStartedEvent),
+            MessageType: MessageType.Event,
+            MessageVersion: "1.0",
+            PublishedBy: "LifecycleService",
+            ConsumedBy: Array.Empty<string>(),
+            CorrelationId: checklist.Id,
+            CausationId: null,
+            OccurredAtUtc: DateTimeOffset.UtcNow,
+            IsPublic: true,
+            Payload: new OnboardingStartedEventPayload
+            {
+                ChecklistId = checklist.Id,
+                EmployeeId = checklist.EmployeeId,
+                StartDate = checklist.StartDate
+            }
+        );
+        await _eventPublisher.PublishAsync(onboardingStartedEvent, cancellationToken);
 
         await _auditLogService.LogAsync("OnboardingChecklist", checklist.Id, "ManuallyStarted", command.UserId, null, checklist, cancellationToken);
 

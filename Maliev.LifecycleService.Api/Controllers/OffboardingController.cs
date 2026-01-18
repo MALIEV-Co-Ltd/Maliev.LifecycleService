@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using Maliev.LifecycleService.Application.Commands.Offboarding;
 using Maliev.LifecycleService.Application.Commands.Offboarding.Handlers;
 using Maliev.LifecycleService.Application.Queries.Offboarding;
@@ -6,6 +5,7 @@ using Maliev.LifecycleService.Application.Queries.Offboarding.Handlers;
 using Maliev.LifecycleService.Domain.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Maliev.LifecycleService.Api.Controllers;
 

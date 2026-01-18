@@ -1,6 +1,5 @@
-using Maliev.LifecycleService.Application.Interfaces;
 using Maliev.LifecycleService.Domain.Commands;
-using Maliev.LifecycleService.Domain.IntegrationEvents;
+using Maliev.MessagingContracts.Generated;
 using MassTransit;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -37,7 +36,24 @@ public class RevokeAccessCommandHandler : IRequestHandler<RevokeAccessCommand, b
         // Logic to revoke system access via IAM or other mechanisms
         // ...
 
-        await _publishEndpoint.Publish(new AccessRevokedEvent(request.EmployeeId, request.CorrelationId), cancellationToken);
+        var accessRevokedEvent = new AccessRevokedEvent(
+            MessageId: Guid.NewGuid(),
+            MessageName: nameof(AccessRevokedEvent),
+            MessageType: MessageType.Event,
+            MessageVersion: "1.0.0",
+            PublishedBy: "LifecycleService",
+            ConsumedBy: ["IAMService", "NotificationService"],
+            CorrelationId: request.CorrelationId,
+            CausationId: null,
+            OccurredAtUtc: DateTimeOffset.UtcNow,
+            IsPublic: false,
+            Payload: new AccessRevokedEventPayload(
+                EmployeeId: request.EmployeeId,
+                RevokedDate: DateTimeOffset.UtcNow
+            )
+        );
+
+        await _publishEndpoint.Publish(accessRevokedEvent, cancellationToken);
 
         return true;
     }
