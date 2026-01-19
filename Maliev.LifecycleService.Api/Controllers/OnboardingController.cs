@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using Maliev.LifecycleService.Application.Commands.Onboarding;
 using Maliev.LifecycleService.Application.Commands.Onboarding.Handlers;
 using Maliev.LifecycleService.Application.Queries.Onboarding;
@@ -6,6 +5,7 @@ using Maliev.LifecycleService.Application.Queries.Onboarding.Handlers;
 using Maliev.LifecycleService.Domain.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Maliev.LifecycleService.Api.Controllers;
 

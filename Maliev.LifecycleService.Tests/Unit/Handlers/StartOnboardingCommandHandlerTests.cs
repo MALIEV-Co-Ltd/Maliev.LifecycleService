@@ -3,7 +3,7 @@ using Maliev.LifecycleService.Application.Commands.Onboarding.Handlers;
 using Maliev.LifecycleService.Application.Interfaces;
 using Maliev.LifecycleService.Domain.Entities;
 using Maliev.LifecycleService.Domain.Enums;
-using Maliev.LifecycleService.Domain.Events;
+using Maliev.MessagingContracts.Generated;
 using Moq;
 using Xunit;
 

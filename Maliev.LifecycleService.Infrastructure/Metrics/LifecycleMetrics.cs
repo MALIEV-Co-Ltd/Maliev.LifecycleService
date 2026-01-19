@@ -1,5 +1,5 @@
-using System.Diagnostics.Metrics;
 using Maliev.LifecycleService.Application.Interfaces;
+using System.Diagnostics.Metrics;
 
 namespace Maliev.LifecycleService.Infrastructure.Metrics;
 

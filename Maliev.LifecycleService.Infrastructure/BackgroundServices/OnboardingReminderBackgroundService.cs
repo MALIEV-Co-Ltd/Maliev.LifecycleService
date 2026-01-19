@@ -1,5 +1,5 @@
 using Maliev.LifecycleService.Application.Interfaces;
-using Maliev.LifecycleService.Domain.Events;
+using Maliev.MessagingContracts.Generated;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -56,11 +56,24 @@ public class OnboardingReminderBackgroundService : BackgroundService
                             _logger.LogWarning("Task {ItemId} is overdue since {DueDate}", item.Id, dueDate);
                             metrics.RecordTaskOverdue();
                             await eventPublisher.PublishAsync(new OnboardingItemOverdueEvent(
-                                checklist.Id,
-                                item.Id,
-                                item.Title,
-                                item.AssignedTo,
-                                dueDate), stoppingToken);
+                                Guid.NewGuid(), // MessageId
+                                nameof(OnboardingItemOverdueEvent), // MessageName
+                                MessageType.Event, // MessageType (replace with correct value if needed)
+                                "1.0", // MessageVersion
+                                "OnboardingReminderBackgroundService", // PublishedBy
+                                Array.Empty<string>(), // ConsumedBy (empty list or provide as needed)
+                                Guid.NewGuid(), // CorrelationId (replace with actual correlation if available)
+                                null, // CausationId (replace if available)
+                                DateTimeOffset.UtcNow, // OccurredAtUtc
+                                true, // IsPublic (set as needed)
+                                new OnboardingItemOverdueEventPayload
+                                {
+                                    ItemId = item.Id,
+                                    EmployeeId = checklist.EmployeeId,
+                                    ItemTitle = item.Title,
+                                    DueDate = dueDate
+                                }
+                            ), stoppingToken);
                         }
                         // Due soon: within 1 day
                         else if (now > dueDate.AddDays(-1) && now < dueDate)

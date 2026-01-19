@@ -1,7 +1,6 @@
-using Maliev.MessagingContracts.Generated;
 using Maliev.LifecycleService.Application.Interfaces;
 using Maliev.LifecycleService.Domain.Entities;
-using DomainEvents = Maliev.LifecycleService.Domain.Events;
+using Maliev.MessagingContracts.Generated;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 
@@ -89,7 +88,27 @@ public class EmployeeCreatedEventConsumer : IConsumer<EmployeeCreatedEvent>
         await _onboardingRepository.AddAsync(checklist);
 
         _metrics.RecordOnboardingStarted();
-        await _eventPublisher.PublishAsync(new DomainEvents.OnboardingStartedEvent(checklist.Id, checklist.EmployeeId, checklist.StartDate));
+        await _eventPublisher.PublishAsync(
+            new OnboardingStartedEvent
+            {
+                MessageId = Guid.NewGuid(),
+                MessageName = nameof(OnboardingStartedEvent),
+                MessageType = MessageType.Event,
+                MessageVersion = "1.0",
+                PublishedBy = "LifecycleService",
+                ConsumedBy = Array.Empty<string>(),
+                CorrelationId = context.CorrelationId ?? Guid.NewGuid(),
+                CausationId = context.MessageId,
+                OccurredAtUtc = DateTimeOffset.UtcNow,
+                IsPublic = true,
+                Payload = new OnboardingStartedEventPayload
+                {
+                    ChecklistId = checklist.Id,
+                    EmployeeId = checklist.EmployeeId,
+                    StartDate = checklist.StartDate
+                }
+            }
+        );
 
         _logger.LogInformation("Successfully created onboarding checklist {ChecklistId} for employee {EmployeeId}", checklist.Id, payload.EmployeeId);
     }

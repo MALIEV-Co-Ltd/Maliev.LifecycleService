@@ -1,7 +1,7 @@
 using Maliev.LifecycleService.Application.Interfaces;
 using Maliev.LifecycleService.Domain.Enums;
 using Maliev.LifecycleService.Domain.Exceptions;
-using Maliev.LifecycleService.Domain.Events;
+using Maliev.MessagingContracts.Generated;
 
 namespace Maliev.LifecycleService.Application.Commands.Onboarding.Handlers;
 
@@ -79,7 +79,26 @@ public class CompleteOnboardingItemCommandHandler
             var duration = (checklist.CompletedDate.Value - checklist.CreatedDate).TotalDays;
             _metrics.RecordOnboardingDuration(duration);
             _metrics.RecordOnboardingCompleted();
-            await _eventPublisher.PublishAsync(new OnboardingCompletedEvent(checklist.Id, checklist.EmployeeId, checklist.CompletedDate.Value), cancellationToken);
+            await _eventPublisher.PublishAsync(
+                new OnboardingCompletedEvent(
+                    MessageId: Guid.NewGuid(),
+                    MessageName: nameof(OnboardingCompletedEvent),
+                    MessageType: MessageType.Event,
+                    MessageVersion: "1.0",
+                    PublishedBy: "LifecycleService",
+                    ConsumedBy: Array.Empty<string>(),
+                    CorrelationId: Guid.NewGuid(),
+                    CausationId: null,
+                    OccurredAtUtc: DateTimeOffset.UtcNow,
+                    IsPublic: false,
+                    Payload: new OnboardingCompletedEventPayload(
+                        ChecklistId: checklist.Id,
+                        EmployeeId: checklist.EmployeeId,
+                        CompletedDate: checklist.CompletedDate.Value
+                    )
+                ),
+                cancellationToken
+            );
         }
 
         await _repository.UpdateAsync(checklist, cancellationToken);

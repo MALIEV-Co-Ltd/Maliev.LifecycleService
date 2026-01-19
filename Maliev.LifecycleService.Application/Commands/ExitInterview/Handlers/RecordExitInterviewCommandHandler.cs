@@ -1,5 +1,4 @@
 using Maliev.LifecycleService.Application.Interfaces;
-using Maliev.LifecycleService.Domain.Entities;
 
 namespace Maliev.LifecycleService.Application.Commands.ExitInterview.Handlers;
 

@@ -1,7 +1,7 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Maliev.LifecycleService.Application.Interfaces;
 using Maliev.LifecycleService.Domain.Entities;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Maliev.LifecycleService.Application.Services;
 

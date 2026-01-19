@@ -1,14 +1,12 @@
-using Maliev.Aspire.ServiceDefaults;
-using Maliev.Aspire.ServiceDefaults.IAM;
-using Maliev.LifecycleService.Application.Commands.Onboarding.Handlers;
-using Maliev.LifecycleService.Application.Commands.Offboarding.Handlers;
-using Maliev.LifecycleService.Application.Commands.Templates.Handlers;
 using Maliev.LifecycleService.Application.Commands.ExitInterview.Handlers;
+using Maliev.LifecycleService.Application.Commands.Offboarding.Handlers;
+using Maliev.LifecycleService.Application.Commands.Onboarding.Handlers;
+using Maliev.LifecycleService.Application.Commands.Templates.Handlers;
 using Maliev.LifecycleService.Application.Interfaces;
-using Maliev.LifecycleService.Application.Queries.Onboarding.Handlers;
-using Maliev.LifecycleService.Application.Queries.Offboarding.Handlers;
-using Maliev.LifecycleService.Application.Queries.Templates.Handlers;
 using Maliev.LifecycleService.Application.Queries.ExitInterview.Handlers;
+using Maliev.LifecycleService.Application.Queries.Offboarding.Handlers;
+using Maliev.LifecycleService.Application.Queries.Onboarding.Handlers;
+using Maliev.LifecycleService.Application.Queries.Templates.Handlers;
 using Maliev.LifecycleService.Application.Services;
 using Maliev.LifecycleService.Infrastructure.BackgroundServices;
 using Maliev.LifecycleService.Infrastructure.Caching;
@@ -20,7 +18,6 @@ using Maliev.LifecycleService.Infrastructure.Metrics;
 using Maliev.LifecycleService.Infrastructure.Repositories;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 // Initialize bootstrap logging
 using var loggerFactory = LoggerFactory.Create(logBuilder => logBuilder.AddConsole());

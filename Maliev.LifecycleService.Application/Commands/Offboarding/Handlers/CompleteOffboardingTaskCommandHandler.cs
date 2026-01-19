@@ -1,7 +1,7 @@
 using Maliev.LifecycleService.Application.Interfaces;
 using Maliev.LifecycleService.Application.Services;
 using Maliev.LifecycleService.Domain.Enums;
-using Maliev.LifecycleService.Domain.Events;
+using Maliev.MessagingContracts.Generated;
 
 namespace Maliev.LifecycleService.Application.Commands.Offboarding.Handlers;
 
@@ -82,10 +82,48 @@ public class CompleteOffboardingTaskCommandHandler
             var duration = (checklist.CompletedDate.Value - checklist.CreatedDate).TotalDays;
             _metrics.RecordOffboardingDuration(duration);
             _metrics.RecordOffboardingCompleted();
-            await _eventPublisher.PublishAsync(new OffboardingCompletedEvent(checklist.Id, checklist.EmployeeId, checklist.CompletedDate.Value), cancellationToken);
+            await _eventPublisher.PublishAsync(
+                new OffboardingCompletedEvent(
+                    MessageId: Guid.NewGuid(),
+                    MessageName: nameof(OffboardingCompletedEvent),
+                    MessageType: MessageType.Event,
+                    MessageVersion: "1.0",
+                    PublishedBy: "LifecycleService",
+                    ConsumedBy: Array.Empty<string>(),
+                    CorrelationId: Guid.NewGuid(),
+                    CausationId: null,
+                    OccurredAtUtc: DateTimeOffset.UtcNow,
+                    IsPublic: false,
+                    Payload: new OffboardingCompletedEventPayload(
+                        ChecklistId: checklist.Id,
+                        EmployeeId: checklist.EmployeeId,
+                        CompletedDate: checklist.CompletedDate.Value
+                    )
+                ),
+                cancellationToken
+            );
 
             // Trigger access revocation if not already triggered by a specific task
-            await _eventPublisher.PublishAsync(new AccessRevocationRequiredEvent(checklist.EmployeeId, DateTime.UtcNow, "Offboarding completed"), cancellationToken);
+            await _eventPublisher.PublishAsync(
+                new AccessRevocationRequiredEvent(
+                    MessageId: Guid.NewGuid(),
+                    MessageName: nameof(AccessRevocationRequiredEvent),
+                    MessageType: MessageType.Event,
+                    MessageVersion: "1.0",
+                    PublishedBy: "LifecycleService",
+                    ConsumedBy: Array.Empty<string>(),
+                    CorrelationId: Guid.NewGuid(),
+                    CausationId: null,
+                    OccurredAtUtc: DateTimeOffset.UtcNow,
+                    IsPublic: false,
+                    Payload: new AccessRevocationRequiredEventPayload(
+                        EmployeeId: checklist.EmployeeId,
+                        EffectiveDate: DateTimeOffset.UtcNow,
+                        Reason: "Offboarding completed"
+                    )
+                ),
+                cancellationToken
+            );
         }
 
         await _repository.UpdateAsync(checklist, cancellationToken);

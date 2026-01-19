@@ -1,5 +1,5 @@
-using System.Security.Claims;
 using Maliev.LifecycleService.Application.Interfaces;
+using System.Security.Claims;
 
 namespace Maliev.LifecycleService.Api.Middleware;
 
