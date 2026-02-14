@@ -22,8 +22,8 @@ public abstract class BaseIntegrationTest : IClassFixture<LifecycleTestWebApplic
 
         // Set up authentication
         var claims = new[] { 
-            new System.Security.Claims.Claim("permission", Maliev.LifecycleService.Domain.Authorization.LifecyclePermissions.Admin),
-            new System.Security.Claims.Claim("permission", Maliev.LifecycleService.Domain.Authorization.LifecyclePermissions.Manage)
+            new System.Security.Claims.Claim("permissions", Maliev.LifecycleService.Domain.Authorization.LifecyclePermissions.Admin),
+            new System.Security.Claims.Claim("permissions", Maliev.LifecycleService.Domain.Authorization.LifecyclePermissions.Manage)
         };
         var token = factory.CreateTestToken("test-user", claims);
         Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);

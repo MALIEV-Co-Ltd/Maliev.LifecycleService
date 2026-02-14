@@ -15,7 +15,8 @@ public class ExitInterviewControllerTests : BaseIntegrationTest
     {
         // Ensure test user has Admin role and permission for these tests
         var claims = new[] { 
-            new System.Security.Claims.Claim("permission", Maliev.LifecycleService.Domain.Authorization.LifecyclePermissions.Admin),
+            new System.Security.Claims.Claim("permissions", Maliev.LifecycleService.Domain.Authorization.LifecyclePermissions.Admin),
+            new System.Security.Claims.Claim("permissions", Maliev.LifecycleService.Domain.Authorization.LifecyclePermissions.Manage),
             new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, "Admin")
         };
         var token = factory.CreateTestToken("test-user", claims);

@@ -8,8 +8,7 @@ namespace Maliev.LifecycleService.Tests.Integration.Fixtures;
 /// </summary>
 public class RabbitMqFixture : IAsyncLifetime
 {
-    private readonly RabbitMqContainer _container = new RabbitMqBuilder()
-        .WithImage("rabbitmq:3-management-alpine")
+    private readonly RabbitMqContainer _container = new RabbitMqBuilder().WithName("rabbitmq:3-management-alpine")
         .Build();
 
     /// <summary>

@@ -19,16 +19,13 @@ namespace Maliev.LifecycleService.Tests.TestUtilities;
 
 public class LifecycleTestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _postgresContainer = new PostgreSqlBuilder()
-        .WithImage("postgres:18-alpine")
+    private readonly PostgreSqlContainer _postgresContainer = new PostgreSqlBuilder().WithName("postgres:18-alpine")
         .Build();
 
-    private readonly RedisContainer _redisContainer = new RedisBuilder()
-        .WithImage("redis:7-alpine")
+    private readonly RedisContainer _redisContainer = new RedisBuilder().WithName("redis:7-alpine")
         .Build();
 
-    private readonly RabbitMqContainer _rabbitmqContainer = new RabbitMqBuilder()
-        .WithImage("rabbitmq:4-management-alpine")
+    private readonly RabbitMqContainer _rabbitmqContainer = new RabbitMqBuilder().WithName("rabbitmq:4-management-alpine")
         .Build();
 
     private readonly RSA _testRsa = RSA.Create(2048);
@@ -73,6 +70,7 @@ public class LifecycleTestWebApplicationFactory : WebApplicationFactory<Program>
         {
             services.PostConfigureAll<JwtBearerOptions>(options =>
             {
+                options.MapInboundClaims = false;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
@@ -90,13 +88,6 @@ public class LifecycleTestWebApplicationFactory : WebApplicationFactory<Program>
             {
                 options.WaitUntilStarted = true;
                 options.StartTimeout = TimeSpan.FromSeconds(30);
-            });
-
-            // Configure authorization policies for testing
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy("lifecycle.workflows.manage", policy => policy.RequireAuthenticatedUser());
-                options.AddPolicy("lifecycle.admin.manage", policy => policy.RequireAuthenticatedUser());
             });
 
             services.AddMassTransitTestHarness();

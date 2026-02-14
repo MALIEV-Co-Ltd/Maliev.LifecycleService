@@ -8,8 +8,7 @@ namespace Maliev.LifecycleService.Tests.Integration.Fixtures;
 /// </summary>
 public class PostgresFixture : IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder()
-        .WithImage("postgres:18-alpine")
+    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder().WithName("postgres:18-alpine")
         .WithDatabase("lifecycledb")
         .WithUsername("postgres")
         .WithPassword("postgres")
