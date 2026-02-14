@@ -8,7 +8,7 @@ namespace Maliev.LifecycleService.Tests.Integration.Fixtures;
 /// </summary>
 public class RedisFixture : IAsyncLifetime
 {
-    private readonly RedisContainer _container = new RedisBuilder().WithName("redis:7-alpine")
+    private readonly RedisContainer _container = new RedisBuilder().WithImage("redis:7-alpine")
         .Build();
 
     /// <summary>
