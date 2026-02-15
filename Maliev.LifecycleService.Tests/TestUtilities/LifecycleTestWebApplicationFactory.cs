@@ -60,6 +60,9 @@ public class LifecycleTestWebApplicationFactory : WebApplicationFactory<Program>
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
+        builder.UseSetting("CORS:AllowedOrigins:0", "http://localhost:3000");
+        builder.UseSetting("Features:FailOpenOnIAMError", "true");
+        builder.UseSetting("IAM:RegistrationDelaySeconds", "0");
 
         // Set environment variables for connection strings (read early in configuration pipeline)
         Environment.SetEnvironmentVariable("ConnectionStrings__LifecycleDbContext", _postgresContainer.GetConnectionString());

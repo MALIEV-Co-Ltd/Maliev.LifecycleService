@@ -1,3 +1,4 @@
+using Maliev.Aspire.ServiceDefaults.Authorization;
 using Maliev.LifecycleService.Application.Commands.Offboarding;
 using Maliev.LifecycleService.Application.Commands.Offboarding.Handlers;
 using Maliev.LifecycleService.Application.Queries.Offboarding;
@@ -53,7 +54,7 @@ public class OffboardingController : ControllerBase
     /// <param name="ct">The cancellation token.</param>
     /// <returns>A created result with the offboarding workflow identifier.</returns>
     [HttpPost("employees/{employeeId}/offboarding/start")]
-    [Authorize(Policy = LifecyclePermissions.Manage)]
+    [RequirePermission(LifecyclePermissions.Manage)]
     public async Task<IActionResult> Start(Guid employeeId, [FromBody] StartOffboardingRequest request, CancellationToken ct)
     {
         var userId = GetUserId();
@@ -74,7 +75,7 @@ public class OffboardingController : ControllerBase
     /// <param name="ct">The cancellation token.</param>
     /// <returns>The offboarding status if found.</returns>
     [HttpGet("employees/{employeeId}/offboarding/status")]
-    [Authorize(Policy = LifecyclePermissions.Manage)]
+    [RequirePermission(LifecyclePermissions.Manage)]
     public async Task<IActionResult> GetStatus(Guid employeeId, CancellationToken ct)
     {
         var result = await _getStatusHandler.HandleAsync(new GetOffboardingStatusQuery(employeeId), ct);
@@ -90,7 +91,7 @@ public class OffboardingController : ControllerBase
     /// <param name="limit">The maximum number of items to return.</param>
     /// <returns>A collection of pending offboardings.</returns>
     [HttpGet("offboarding/pending")]
-    [Authorize(Policy = LifecyclePermissions.Manage)]
+    [RequirePermission(LifecyclePermissions.Manage)]
     public async Task<IActionResult> GetPending(CancellationToken ct, [FromQuery] int offset = 0, [FromQuery] int limit = 50)
     {
         var result = await _getPendingHandler.HandleAsync(new GetPendingOffboardingsQuery(offset, limit), ct);
@@ -105,7 +106,7 @@ public class OffboardingController : ControllerBase
     /// <param name="ct">The cancellation token.</param>
     /// <returns>No content on success.</returns>
     [HttpPut("offboarding-tasks/{taskId}/complete")]
-    [Authorize(Policy = LifecyclePermissions.Manage)]
+    [RequirePermission(LifecyclePermissions.Manage)]
     public async Task<IActionResult> CompleteTask(Guid taskId, [FromBody] CompleteTaskRequest request, CancellationToken ct)
     {
         var userId = GetUserId();
@@ -121,7 +122,7 @@ public class OffboardingController : ControllerBase
     /// <param name="ct">The cancellation token.</param>
     /// <returns>No content on success.</returns>
     [HttpPut("offboarding-tasks/{taskId}/reassign")]
-    [Authorize(Policy = LifecyclePermissions.Manage)]
+    [RequirePermission(LifecyclePermissions.Manage)]
     public async Task<IActionResult> ReassignTask(Guid taskId, [FromBody] ReassignTaskRequest request, CancellationToken ct)
     {
         var userId = GetUserId();

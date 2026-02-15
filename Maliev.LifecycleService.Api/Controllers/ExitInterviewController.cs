@@ -1,3 +1,4 @@
+using Maliev.Aspire.ServiceDefaults.Authorization;
 using Maliev.LifecycleService.Application.Commands.ExitInterview;
 using Maliev.LifecycleService.Application.Commands.ExitInterview.Handlers;
 using Maliev.LifecycleService.Application.Queries.ExitInterview;
@@ -38,7 +39,7 @@ public class ExitInterviewController : ControllerBase
     /// <param name="ct">The cancellation token.</param>
     /// <returns>The exit interview information if found.</returns>
     [HttpGet("employees/{employeeId}/exit-interview")]
-    [Authorize(Policy = LifecyclePermissions.Admin)] // Restricted access as per US4
+    [RequirePermission(LifecyclePermissions.Admin)] // Restricted access as per US4
     public async Task<IActionResult> Get(Guid employeeId, CancellationToken ct)
     {
         var result = await _getHandler.HandleAsync(new GetExitInterviewQuery(employeeId), ct);
@@ -48,7 +49,7 @@ public class ExitInterviewController : ControllerBase
         var userId = GetUserId();
         // Since we are using policy-based auth, we should check if the user has the permission or is the conductor.
         // For simplicity in this context, we check the claim directly or assume the policy allows admins.
-        if (!User.HasClaim("permission", LifecyclePermissions.Admin) && result.ConductedBy != userId)
+        if (!User.HasClaim("permissions", LifecyclePermissions.Admin) && result.ConductedBy != userId)
         {
             return Forbid();
         }
@@ -64,7 +65,7 @@ public class ExitInterviewController : ControllerBase
     /// <param name="ct">The cancellation token.</param>
     /// <returns>A created result with the exit interview identifier.</returns>
     [HttpPost("employees/{employeeId}/exit-interview")]
-    [Authorize(Policy = LifecyclePermissions.Manage)]
+    [RequirePermission(LifecyclePermissions.Manage)]
     public async Task<IActionResult> Record(Guid employeeId, [FromBody] RecordExitInterviewRequest request, CancellationToken ct)
     {
         var userId = GetUserId();

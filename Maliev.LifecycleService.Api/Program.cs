@@ -1,3 +1,4 @@
+using Maliev.Aspire.ServiceDefaults;
 using Maliev.LifecycleService.Application.Commands.ExitInterview.Handlers;
 using Maliev.LifecycleService.Application.Commands.Offboarding.Handlers;
 using Maliev.LifecycleService.Application.Commands.Onboarding.Handlers;
@@ -42,7 +43,7 @@ try
 
     // --- 3. Data & Cache ---
     builder.AddPostgresDbContext<LifecycleDbContext>(connectionName: "LifecycleDbContext");
-    builder.AddRedisDistributedCache(instanceName: "lifecycle:");
+    builder.AddStandardCache("lifecycle:"); // Redis + in-memory fallback, memory-optimized
 
     // --- 4. Messaging ---
     builder.AddMassTransitWithRabbitMq(
@@ -55,7 +56,9 @@ try
             });
 
             x.AddConsumer<EmployeeCreatedEventConsumer>();
+            x.AddConsumer<EmployeeDepartmentTransferredEventConsumer>();
             x.AddConsumer<EmployeeTerminatedEventConsumer>();
+
             x.AddConsumer<UndoRevokeAccessConsumer>();
         },
         configureRabbitMq: (context, cfg) =>
@@ -69,13 +72,14 @@ try
 
     // --- 5. Security ---
     builder.AddJwtAuthentication();
+    builder.Services.AddPermissionAuthorization();
 
     // IAM Registration
     builder.AddIAMServiceClient("lifecycle");
     builder.Services.AddIAMRegistration<LifecycleIAMRegistrationService>("lifecycle");
 
     // --- 6. API Configuration ---
-    builder.AddDefaultCors();
+    builder.AddStandardCors(); // CORS with fail-fast validation
     builder.AddDefaultApiVersioning();
     builder.AddStandardRateLimiting();
 

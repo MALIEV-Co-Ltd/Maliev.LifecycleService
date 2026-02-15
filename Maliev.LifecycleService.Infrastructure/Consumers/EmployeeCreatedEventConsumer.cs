@@ -56,9 +56,17 @@ public class EmployeeCreatedEventConsumer : IConsumer<EmployeeCreatedEvent>
         var template = await _templateRepository.GetByDepartmentIdAsync(payload.DepartmentId);
         if (template == null)
         {
-            _logger.LogWarning("No onboarding template found for department {DepartmentId}. Skipping auto-creation.", payload.DepartmentId);
+            if (payload.DepartmentId == Guid.Empty)
+            {
+                _logger.LogInformation("Employee {EmployeeId} is not assigned to a department. Skipping auto-onboarding creation.", payload.EmployeeId);
+            }
+            else
+            {
+                _logger.LogWarning("No onboarding template found for department {DepartmentId}. Skipping auto-creation.", payload.DepartmentId);
+            }
             return;
         }
+
 
         var checklist = new OnboardingChecklist
         {
