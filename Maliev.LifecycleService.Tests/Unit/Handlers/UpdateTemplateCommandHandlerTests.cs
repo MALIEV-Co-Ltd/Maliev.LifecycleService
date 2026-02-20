@@ -29,10 +29,10 @@ public class UpdateTemplateCommandHandlerTests
         // Arrange
         var templateId = Guid.NewGuid();
         var departmentId = Guid.NewGuid();
-        var existingTemplate = new OnboardingTemplate 
-        { 
-            Id = templateId, 
-            Name = "Old Name", 
+        var existingTemplate = new OnboardingTemplate
+        {
+            Id = templateId,
+            Name = "Old Name",
             DepartmentId = departmentId,
             Items = new List<OnboardingTemplateItem>()
         };

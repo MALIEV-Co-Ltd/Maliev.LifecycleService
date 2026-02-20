@@ -35,7 +35,7 @@ public class EmployeeDepartmentTransferredEventConsumer : IConsumer<EmployeeDepa
     public async Task Consume(ConsumeContext<EmployeeDepartmentTransferredEvent> context)
     {
         var payload = context.Message.Payload;
-        _logger.LogInformation("Processing DepartmentTransferred event for Employee {EmployeeId} to Department {NewDepartmentId}", 
+        _logger.LogInformation("Processing DepartmentTransferred event for Employee {EmployeeId} to Department {NewDepartmentId}",
             payload.EmployeeId, payload.NewDepartmentId);
 
         // Check if onboarding checklist already exists
@@ -56,7 +56,7 @@ public class EmployeeDepartmentTransferredEventConsumer : IConsumer<EmployeeDepa
         var template = await _templateRepository.GetByDepartmentIdAsync(payload.NewDepartmentId);
         if (template == null)
         {
-            _logger.LogWarning("No onboarding template found for the new department {DepartmentId}. Cannot auto-create checklist.", 
+            _logger.LogWarning("No onboarding template found for the new department {DepartmentId}. Cannot auto-create checklist.",
                 payload.NewDepartmentId);
             return;
         }
@@ -110,7 +110,7 @@ public class EmployeeDepartmentTransferredEventConsumer : IConsumer<EmployeeDepa
             }
         });
 
-        _logger.LogInformation("Successfully initialized onboarding checklist {ChecklistId} for employee {EmployeeId} after department assignment.", 
+        _logger.LogInformation("Successfully initialized onboarding checklist {ChecklistId} for employee {EmployeeId} after department assignment.",
             checklist.Id, payload.EmployeeId);
     }
 }
