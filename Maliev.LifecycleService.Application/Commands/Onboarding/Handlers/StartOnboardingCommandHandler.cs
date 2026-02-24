@@ -1,6 +1,7 @@
 using Maliev.LifecycleService.Application.Interfaces;
 using Maliev.LifecycleService.Domain.Entities;
 using Maliev.MessagingContracts.Generated;
+using Maliev.MessagingContracts.Contracts.Lifecycle;
 
 namespace Maliev.LifecycleService.Application.Commands.Onboarding.Handlers;
 
@@ -112,12 +113,12 @@ public class StartOnboardingCommandHandler
             CausationId: null,
             OccurredAtUtc: DateTimeOffset.UtcNow,
             IsPublic: true,
-            Payload: new OnboardingStartedEventPayload
-            {
-                ChecklistId = checklist.Id,
-                EmployeeId = checklist.EmployeeId,
-                StartDate = checklist.StartDate
-            }
+            Payload: new OnboardingStartedEventPayload(
+                ChecklistId: checklist.Id,
+                EmployeeId: checklist.EmployeeId,
+                StartDate: checklist.StartDate,
+                TotalItems: checklist.TotalItems
+            )
         );
         await _eventPublisher.PublishAsync(onboardingStartedEvent, cancellationToken);
 

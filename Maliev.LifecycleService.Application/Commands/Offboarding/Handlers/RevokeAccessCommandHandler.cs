@@ -1,5 +1,6 @@
 using Maliev.LifecycleService.Domain.Commands;
 using Maliev.MessagingContracts.Generated;
+using Maliev.MessagingContracts.Contracts.Lifecycle;
 using MassTransit;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -42,7 +43,7 @@ public class RevokeAccessCommandHandler : IRequestHandler<RevokeAccessCommand, b
             MessageType: MessageType.Event,
             MessageVersion: "1.0.0",
             PublishedBy: "LifecycleService",
-            ConsumedBy: ["IAMService", "NotificationService"],
+            ConsumedBy: new List<string> { "IAMService", "NotificationService" },
             CorrelationId: request.CorrelationId,
             CausationId: null,
             OccurredAtUtc: DateTimeOffset.UtcNow,

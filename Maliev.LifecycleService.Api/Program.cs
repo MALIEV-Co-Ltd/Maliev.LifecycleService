@@ -56,7 +56,7 @@ try
             });
 
             x.AddConsumer<EmployeeCreatedEventConsumer>();
-            x.AddConsumer<EmployeeDepartmentTransferredEventConsumer>();
+            x.AddConsumer<DepartmentTransferredEventConsumer>();
             x.AddConsumer<EmployeeTerminatedEventConsumer>();
 
             x.AddConsumer<UndoRevokeAccessConsumer>();

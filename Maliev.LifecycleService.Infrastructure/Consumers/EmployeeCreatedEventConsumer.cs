@@ -1,6 +1,8 @@
 using Maliev.LifecycleService.Application.Interfaces;
 using Maliev.LifecycleService.Domain.Entities;
 using Maliev.MessagingContracts.Generated;
+using Maliev.MessagingContracts.Contracts.Employee;
+using Maliev.MessagingContracts.Contracts.Lifecycle;
 using MassTransit;
 using Microsoft.Extensions.Logging;
 
@@ -97,25 +99,24 @@ public class EmployeeCreatedEventConsumer : IConsumer<EmployeeCreatedEvent>
 
         _metrics.RecordOnboardingStarted();
         await _eventPublisher.PublishAsync(
-            new OnboardingStartedEvent
-            {
-                MessageId = Guid.NewGuid(),
-                MessageName = nameof(OnboardingStartedEvent),
-                MessageType = MessageType.Event,
-                MessageVersion = "1.0",
-                PublishedBy = "LifecycleService",
-                ConsumedBy = Array.Empty<string>(),
-                CorrelationId = context.CorrelationId ?? Guid.NewGuid(),
-                CausationId = context.MessageId,
-                OccurredAtUtc = DateTimeOffset.UtcNow,
-                IsPublic = true,
-                Payload = new OnboardingStartedEventPayload
-                {
-                    ChecklistId = checklist.Id,
-                    EmployeeId = checklist.EmployeeId,
-                    StartDate = checklist.StartDate
-                }
-            }
+            new OnboardingStartedEvent(
+                MessageId: Guid.NewGuid(),
+                MessageName: nameof(OnboardingStartedEvent),
+                MessageType: MessageType.Event,
+                MessageVersion: "1.0",
+                PublishedBy: "LifecycleService",
+                ConsumedBy: Array.Empty<string>(),
+                CorrelationId: context.CorrelationId ?? Guid.NewGuid(),
+                CausationId: context.MessageId,
+                OccurredAtUtc: DateTimeOffset.UtcNow,
+                IsPublic: true,
+                Payload: new OnboardingStartedEventPayload(
+                    ChecklistId: checklist.Id,
+                    EmployeeId: checklist.EmployeeId,
+                    StartDate: checklist.StartDate,
+                    TotalItems: checklist.TotalItems
+                )
+            )
         );
 
         _logger.LogInformation("Successfully created onboarding checklist {ChecklistId} for employee {EmployeeId}", checklist.Id, payload.EmployeeId);

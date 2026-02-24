@@ -2,6 +2,7 @@ using Maliev.LifecycleService.Application.Interfaces;
 using Maliev.LifecycleService.Application.Services;
 using Maliev.LifecycleService.Domain.Enums;
 using Maliev.MessagingContracts.Generated;
+using Maliev.MessagingContracts.Contracts.Lifecycle;
 
 namespace Maliev.LifecycleService.Application.Commands.Offboarding.Handlers;
 
@@ -129,10 +130,10 @@ public class CompleteOffboardingTaskCommandHandler
         await _repository.UpdateAsync(checklist, cancellationToken);
 
         // Publish LifecycleTaskCompletedEvent
-        await _eventPublisher.PublishAsync(new Maliev.MessagingContracts.Generated.LifecycleTaskCompletedEvent(
+        await _eventPublisher.PublishAsync(new LifecycleTaskCompletedEvent(
             MessageId: Guid.NewGuid(),
-            MessageName: nameof(Maliev.MessagingContracts.Generated.LifecycleTaskCompletedEvent),
-            MessageType: Maliev.MessagingContracts.Generated.MessageType.Event,
+            MessageName: nameof(LifecycleTaskCompletedEvent),
+            MessageType: MessageType.Event,
             MessageVersion: "1.0",
             PublishedBy: "LifecycleService",
             ConsumedBy: Array.Empty<string>(),
@@ -140,7 +141,7 @@ public class CompleteOffboardingTaskCommandHandler
             CausationId: null,
             OccurredAtUtc: DateTimeOffset.UtcNow,
             IsPublic: false,
-            Payload: new Maliev.MessagingContracts.Generated.LifecycleTaskCompletedEventPayload(
+            Payload: new LifecycleTaskCompletedEventPayload(
                 TaskId: task.Id,
                 EmployeeId: checklist.EmployeeId,
                 CompletedDate: task.CompletedDate.Value

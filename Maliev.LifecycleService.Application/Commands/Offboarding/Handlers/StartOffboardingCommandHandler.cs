@@ -2,6 +2,7 @@ using Maliev.LifecycleService.Application.Interfaces;
 using Maliev.LifecycleService.Domain.Entities;
 using Maliev.LifecycleService.Domain.Enums;
 using Maliev.MessagingContracts.Generated;
+using Maliev.MessagingContracts.Contracts.Lifecycle;
 
 namespace Maliev.LifecycleService.Application.Commands.Offboarding.Handlers;
 
@@ -78,21 +79,20 @@ public class StartOffboardingCommandHandler
         var offboardingStartedEvent = new OffboardingStartedEvent(
             MessageId: Guid.NewGuid(),
             MessageName: nameof(OffboardingStartedEvent),
-            MessageType: MessageType.Event, // Use the appropriate MessageType enum value
-            MessageVersion: "1.0", // Set the version as appropriate for your system
-            PublishedBy: "LifecycleService", // Set the publisher name as appropriate
-            ConsumedBy: Array.Empty<string>(), // Or set as needed
+            MessageType: MessageType.Event,
+            MessageVersion: "1.0",
+            PublishedBy: "LifecycleService",
+            ConsumedBy: Array.Empty<string>(),
             CorrelationId: checklist.Id,
             CausationId: null,
             OccurredAtUtc: DateTimeOffset.UtcNow,
             IsPublic: true,
-            Payload: new OffboardingStartedEventPayload
-            {
-                ChecklistId = checklist.Id,
-                EmployeeId = checklist.EmployeeId,
-                TerminationDate = checklist.TerminationDate
-                // Add other payload properties as needed
-            }
+            Payload: new OffboardingStartedEventPayload(
+                ChecklistId: checklist.Id,
+                EmployeeId: checklist.EmployeeId,
+                TerminationDate: checklist.TerminationDate,
+                TerminationReason: checklist.TerminationReason
+            )
         );
 
         await _eventPublisher.PublishAsync(offboardingStartedEvent, cancellationToken);

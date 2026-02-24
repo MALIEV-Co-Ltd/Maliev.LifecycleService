@@ -4,6 +4,7 @@ using Maliev.LifecycleService.Application.Interfaces;
 using Maliev.LifecycleService.Domain.Entities;
 using Maliev.LifecycleService.Domain.Enums;
 using Maliev.MessagingContracts.Generated;
+using Maliev.MessagingContracts.Contracts.Lifecycle;
 using Moq;
 using Xunit;
 
