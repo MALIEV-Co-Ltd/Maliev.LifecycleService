@@ -1,6 +1,6 @@
 using Maliev.LifecycleService.Application.Interfaces;
 using Maliev.LifecycleService.Domain.Entities;
-using Maliev.MessagingContracts.Generated;
+using Maliev.MessagingContracts;
 using Maliev.MessagingContracts.Contracts.Employee;
 using Maliev.MessagingContracts.Contracts.Lifecycle;
 using MassTransit;

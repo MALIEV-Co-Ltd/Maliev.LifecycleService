@@ -1,7 +1,7 @@
 using Maliev.LifecycleService.Application.Interfaces;
 using Maliev.LifecycleService.Application.Services;
 using Maliev.LifecycleService.Domain.Enums;
-using Maliev.MessagingContracts.Generated;
+using Maliev.MessagingContracts;
 using Maliev.MessagingContracts.Contracts.Lifecycle;
 
 namespace Maliev.LifecycleService.Application.Commands.Offboarding.Handlers;

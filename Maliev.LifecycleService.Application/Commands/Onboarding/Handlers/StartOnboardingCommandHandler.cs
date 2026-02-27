@@ -1,6 +1,6 @@
 using Maliev.LifecycleService.Application.Interfaces;
 using Maliev.LifecycleService.Domain.Entities;
-using Maliev.MessagingContracts.Generated;
+using Maliev.MessagingContracts;
 using Maliev.MessagingContracts.Contracts.Lifecycle;
 
 namespace Maliev.LifecycleService.Application.Commands.Onboarding.Handlers;

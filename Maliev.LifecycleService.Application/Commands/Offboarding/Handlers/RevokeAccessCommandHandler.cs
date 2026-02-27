@@ -1,5 +1,5 @@
 using Maliev.LifecycleService.Domain.Commands;
-using Maliev.MessagingContracts.Generated;
+using Maliev.MessagingContracts;
 using Maliev.MessagingContracts.Contracts.Lifecycle;
 using MassTransit;
 using MediatR;

@@ -1,6 +1,6 @@
 using Maliev.LifecycleService.Application.Interfaces;
 using Maliev.LifecycleService.Application.Commands.Offboarding.Handlers;
-using Maliev.MessagingContracts.Generated;
+using Maliev.MessagingContracts;
 using Maliev.MessagingContracts.Contracts.Employee;
 using MassTransit;
 using Microsoft.Extensions.Logging;
