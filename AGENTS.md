@@ -93,7 +93,7 @@ dotnet test --filter "FullyQualifiedName~Maliev.LifecycleService.Tests.Unit.Vali
 
 #### Error Handling
 - Use custom exceptions defined in `Domain.Exceptions` for business logic errors.
-- Validate inputs early using **FluentValidation** (if applicable) or Guard clauses.
+- Validate inputs early using Data Annotations or Guard clauses.
 - Controller actions should return standard HTTP responses (200, 201, 400, 404).
 
 #### Testing
