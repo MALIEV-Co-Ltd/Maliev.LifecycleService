@@ -26,6 +26,7 @@ public class TemplateRepository : ITemplateRepository
     {
         return await _context.OnboardingTemplates
             .Include(x => x.Items)
+            .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
@@ -35,6 +36,7 @@ public class TemplateRepository : ITemplateRepository
         // Try to find department specific active template first
         var template = await _context.OnboardingTemplates
             .Include(x => x.Items)
+            .AsNoTracking()
             .Where(x => x.IsActive && x.DepartmentId == departmentId)
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -43,6 +45,7 @@ public class TemplateRepository : ITemplateRepository
         {
             template = await _context.OnboardingTemplates
                 .Include(x => x.Items)
+                .AsNoTracking()
                 .Where(x => x.IsActive && x.DepartmentId == null)
                 .FirstOrDefaultAsync(cancellationToken);
         }
@@ -55,6 +58,7 @@ public class TemplateRepository : ITemplateRepository
     {
         return await _context.OnboardingTemplates
             .Include(x => x.Items)
+            .AsNoTracking()
             .OrderBy(x => x.Name)
             .ToListAsync(cancellationToken);
     }

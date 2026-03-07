@@ -1,4 +1,3 @@
-using Maliev.LifecycleService.Domain.Commands;
 using Microsoft.Extensions.Logging;
 
 namespace Maliev.LifecycleService.Application.Commands.Handlers;
@@ -22,11 +21,11 @@ public class UndoRevokeAccessCommandHandler
     /// <summary>
     /// Handles the undo access revocation command.
     /// </summary>
-    /// <param name="command">The command.</param>
+    /// <param name="employeeId">The employee ID.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    public async Task HandleAsync(UndoRevokeAccessCommand command, CancellationToken cancellationToken = default)
+    public async Task HandleAsync(Guid employeeId, CancellationToken cancellationToken = default)
     {
-        _logger.LogWarning("UNDO: Restoring system access for employee {EmployeeId}", command.EmployeeId);
+        _logger.LogWarning("UNDO: Restoring system access for employee {EmployeeId}", employeeId);
 
         // Logic to restore access or notify security
 

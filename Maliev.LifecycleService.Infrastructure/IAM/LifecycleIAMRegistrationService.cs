@@ -41,13 +41,37 @@ public class LifecycleIAMRegistrationService : IAMRegistrationService
             {
                 RoleId = "roles.lifecycle.manager",
                 Description = "Full access to manage onboarding and offboarding workflows",
-                PermissionIds = new List<string> { LifecyclePermissions.Manage }
+                PermissionIds = new List<string>
+                {
+                    LifecyclePermissions.OnboardingsRead,
+                    LifecyclePermissions.OnboardingsCreate,
+                    LifecyclePermissions.OnboardingsUpdate,
+                    LifecyclePermissions.OffboardingsRead,
+                    LifecyclePermissions.OffboardingsCreate,
+                    LifecyclePermissions.OffboardingsUpdate,
+                    LifecyclePermissions.ExitInterviewsRead,
+                    LifecyclePermissions.ExitInterviewsCreate
+                }
             },
             new RoleRegistration
             {
                 RoleId = "roles.lifecycle.admin",
                 Description = "Administrative access to lifecycle service settings and templates",
-                PermissionIds = new List<string> { LifecyclePermissions.Manage, LifecyclePermissions.Admin }
+                PermissionIds = new List<string>
+                {
+                    LifecyclePermissions.OnboardingsRead,
+                    LifecyclePermissions.OnboardingsCreate,
+                    LifecyclePermissions.OnboardingsUpdate,
+                    LifecyclePermissions.OffboardingsRead,
+                    LifecyclePermissions.OffboardingsCreate,
+                    LifecyclePermissions.OffboardingsUpdate,
+                    LifecyclePermissions.ExitInterviewsRead,
+                    LifecyclePermissions.ExitInterviewsCreate,
+                    LifecyclePermissions.TemplatesRead,
+                    LifecyclePermissions.TemplatesCreate,
+                    LifecyclePermissions.TemplatesUpdate,
+                    LifecyclePermissions.TemplatesDelete
+                }
             }
         };
     }
