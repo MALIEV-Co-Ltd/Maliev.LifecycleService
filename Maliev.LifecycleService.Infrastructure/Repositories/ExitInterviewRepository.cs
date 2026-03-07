@@ -33,6 +33,7 @@ public class ExitInterviewRepository : IExitInterviewRepository
     {
         return await _context.ExitInterviews
             .Include(x => x.OffboardingChecklist)
+            .AsNoTracking()
             .FirstOrDefaultAsync(x => x.OffboardingChecklist.EmployeeId == employeeId, cancellationToken);
     }
 
@@ -40,6 +41,7 @@ public class ExitInterviewRepository : IExitInterviewRepository
     public async Task<ExitInterview?> GetByChecklistIdAsync(Guid checklistId, CancellationToken cancellationToken = default)
     {
         return await _context.ExitInterviews
+            .AsNoTracking()
             .FirstOrDefaultAsync(x => x.OffboardingChecklistId == checklistId, cancellationToken);
     }
 }

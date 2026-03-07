@@ -31,7 +31,9 @@ public class AuditLogRepository : IAuditLogRepository
     /// <inheritdoc/>
     public async Task<AuditLog?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _context.AuditLogs.FindAsync(new object[] { id }, cancellationToken);
+        return await _context.AuditLogs
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -40,6 +42,7 @@ public class AuditLogRepository : IAuditLogRepository
         return await _context.AuditLogs
             .Where(x => x.EntityType == entityType && x.EntityId == entityId)
             .OrderByDescending(x => x.Timestamp)
+            .AsNoTracking()
             .ToListAsync(cancellationToken);
     }
 }

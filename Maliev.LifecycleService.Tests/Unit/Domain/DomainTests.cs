@@ -43,12 +43,4 @@ public class DomainTests
         Assert.Equal(employeeId, command.EmployeeId);
         Assert.Equal(correlationId, command.CorrelationId);
     }
-
-    [Fact]
-    public void UndoRevokeAccessCommand_ShouldSetProperties()
-    {
-        var employeeId = Guid.NewGuid();
-        var command = new UndoRevokeAccessCommand { EmployeeId = employeeId };
-        Assert.Equal(employeeId, command.EmployeeId);
-    }
 }

@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Maliev.Aspire.ServiceDefaults.Authorization;
 using Maliev.LifecycleService.Application.Commands.Templates;
 using Maliev.LifecycleService.Application.Commands.Templates.Handlers;
@@ -14,7 +15,8 @@ namespace Maliev.LifecycleService.Api.Controllers;
 /// Controller for managing onboarding templates.
 /// </summary>
 [ApiController]
-[Route("lifecycle/v1/templates")]
+[ApiVersion("1.0")]
+[Route("lifecycle/v{version:apiVersion}/templates")]
 [Authorize]
 public class TemplatesController : ControllerBase
 {
@@ -52,7 +54,7 @@ public class TemplatesController : ControllerBase
     /// <param name="ct">The cancellation token.</param>
     /// <returns>A collection of onboarding templates.</returns>
     [HttpGet]
-    [RequirePermission(LifecyclePermissions.Admin)]
+    [RequirePermission(LifecyclePermissions.TemplatesRead)]
     public async Task<IActionResult> List(CancellationToken ct)
     {
         var result = await _listHandler.HandleAsync(new ListTemplatesQuery(), ct);
@@ -66,7 +68,7 @@ public class TemplatesController : ControllerBase
     /// <param name="ct">The cancellation token.</param>
     /// <returns>The onboarding template if found.</returns>
     [HttpGet("{id}")]
-    [RequirePermission(LifecyclePermissions.Admin)]
+    [RequirePermission(LifecyclePermissions.TemplatesRead)]
     public async Task<IActionResult> Get(Guid id, CancellationToken ct)
     {
         var result = await _getHandler.HandleAsync(new GetTemplateQuery(id), ct);
@@ -81,7 +83,7 @@ public class TemplatesController : ControllerBase
     /// <param name="ct">The cancellation token.</param>
     /// <returns>A created result with the template identifier.</returns>
     [HttpPost]
-    [RequirePermission(LifecyclePermissions.Admin)]
+    [RequirePermission(LifecyclePermissions.TemplatesCreate)]
     public async Task<IActionResult> Create([FromBody] CreateTemplateCommand command, CancellationToken ct)
     {
         var userId = GetUserId();
@@ -97,7 +99,7 @@ public class TemplatesController : ControllerBase
     /// <param name="ct">The cancellation token.</param>
     /// <returns>No content on success.</returns>
     [HttpPut("{id}")]
-    [RequirePermission(LifecyclePermissions.Admin)]
+    [RequirePermission(LifecyclePermissions.TemplatesUpdate)]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateTemplateCommand command, CancellationToken ct)
     {
         var userId = GetUserId();
@@ -114,7 +116,7 @@ public class TemplatesController : ControllerBase
     /// <param name="ct">The cancellation token.</param>
     /// <returns>No content on success.</returns>
     [HttpDelete("{id}")]
-    [RequirePermission(LifecyclePermissions.Admin)]
+    [RequirePermission(LifecyclePermissions.TemplatesDelete)]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         var userId = GetUserId();

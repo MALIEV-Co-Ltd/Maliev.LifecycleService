@@ -41,6 +41,7 @@ public class OnboardingRepository : IOnboardingRepository
     {
         return await _context.OnboardingChecklists
             .Include(x => x.Items)
+            .AsNoTracking()
             .FirstOrDefaultAsync(x => x.EmployeeId == employeeId, cancellationToken);
     }
 
@@ -49,6 +50,7 @@ public class OnboardingRepository : IOnboardingRepository
     {
         return await _context.OnboardingChecklists
             .Include(x => x.Items)
+            .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
@@ -60,6 +62,7 @@ public class OnboardingRepository : IOnboardingRepository
             .OrderByDescending(x => x.StartDate)
             .Skip(offset)
             .Take(limit)
+            .AsNoTracking()
             .ToListAsync(cancellationToken);
     }
 

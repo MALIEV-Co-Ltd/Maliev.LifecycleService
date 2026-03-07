@@ -41,6 +41,7 @@ public class OffboardingRepository : IOffboardingRepository
     {
         return await _context.OffboardingChecklists
             .Include(x => x.Tasks)
+            .AsNoTracking()
             .FirstOrDefaultAsync(x => x.EmployeeId == employeeId, cancellationToken);
     }
 
@@ -49,6 +50,7 @@ public class OffboardingRepository : IOffboardingRepository
     {
         return await _context.OffboardingChecklists
             .Include(x => x.Tasks)
+            .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
@@ -60,6 +62,7 @@ public class OffboardingRepository : IOffboardingRepository
             .OrderByDescending(x => x.TerminationDate)
             .Skip(offset)
             .Take(limit)
+            .AsNoTracking()
             .ToListAsync(cancellationToken);
     }
 

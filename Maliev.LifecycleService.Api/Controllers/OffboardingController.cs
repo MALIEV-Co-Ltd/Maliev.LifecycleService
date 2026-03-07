@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Maliev.Aspire.ServiceDefaults.Authorization;
 using Maliev.LifecycleService.Application.Commands.Offboarding;
 using Maliev.LifecycleService.Application.Commands.Offboarding.Handlers;
@@ -14,7 +15,8 @@ namespace Maliev.LifecycleService.Api.Controllers;
 /// Controller for managing offboarding workflows.
 /// </summary>
 [ApiController]
-[Route("lifecycle/v1")]
+[ApiVersion("1.0")]
+[Route("lifecycle/v{version:apiVersion}")]
 [Authorize]
 public class OffboardingController : ControllerBase
 {
@@ -54,7 +56,7 @@ public class OffboardingController : ControllerBase
     /// <param name="ct">The cancellation token.</param>
     /// <returns>A created result with the offboarding workflow identifier.</returns>
     [HttpPost("employees/{employeeId}/offboarding/start")]
-    [RequirePermission(LifecyclePermissions.Manage)]
+    [RequirePermission(LifecyclePermissions.OffboardingsCreate)]
     public async Task<IActionResult> Start(Guid employeeId, [FromBody] StartOffboardingRequest request, CancellationToken ct)
     {
         var userId = GetUserId();
@@ -75,7 +77,7 @@ public class OffboardingController : ControllerBase
     /// <param name="ct">The cancellation token.</param>
     /// <returns>The offboarding status if found.</returns>
     [HttpGet("employees/{employeeId}/offboarding/status")]
-    [RequirePermission(LifecyclePermissions.Manage)]
+    [RequirePermission(LifecyclePermissions.OffboardingsRead)]
     public async Task<IActionResult> GetStatus(Guid employeeId, CancellationToken ct)
     {
         var result = await _getStatusHandler.HandleAsync(new GetOffboardingStatusQuery(employeeId), ct);
@@ -91,7 +93,7 @@ public class OffboardingController : ControllerBase
     /// <param name="limit">The maximum number of items to return.</param>
     /// <returns>A collection of pending offboardings.</returns>
     [HttpGet("offboarding/pending")]
-    [RequirePermission(LifecyclePermissions.Manage)]
+    [RequirePermission(LifecyclePermissions.OffboardingsRead)]
     public async Task<IActionResult> GetPending(CancellationToken ct, [FromQuery] int offset = 0, [FromQuery] int limit = 50)
     {
         var result = await _getPendingHandler.HandleAsync(new GetPendingOffboardingsQuery(offset, limit), ct);
@@ -106,7 +108,7 @@ public class OffboardingController : ControllerBase
     /// <param name="ct">The cancellation token.</param>
     /// <returns>No content on success.</returns>
     [HttpPut("offboarding-tasks/{taskId}/complete")]
-    [RequirePermission(LifecyclePermissions.Manage)]
+    [RequirePermission(LifecyclePermissions.OffboardingsUpdate)]
     public async Task<IActionResult> CompleteTask(Guid taskId, [FromBody] CompleteTaskRequest request, CancellationToken ct)
     {
         var userId = GetUserId();
@@ -122,7 +124,7 @@ public class OffboardingController : ControllerBase
     /// <param name="ct">The cancellation token.</param>
     /// <returns>No content on success.</returns>
     [HttpPut("offboarding-tasks/{taskId}/reassign")]
-    [RequirePermission(LifecyclePermissions.Manage)]
+    [RequirePermission(LifecyclePermissions.OffboardingsUpdate)]
     public async Task<IActionResult> ReassignTask(Guid taskId, [FromBody] ReassignTaskRequest request, CancellationToken ct)
     {
         var userId = GetUserId();

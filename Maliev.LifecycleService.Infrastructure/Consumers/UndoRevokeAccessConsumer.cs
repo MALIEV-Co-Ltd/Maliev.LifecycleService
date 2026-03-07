@@ -1,5 +1,5 @@
 using Maliev.LifecycleService.Application.Commands.Handlers;
-using Maliev.LifecycleService.Domain.Commands;
+using Maliev.MessagingContracts.Contracts.Lifecycle;
 using MassTransit;
 
 namespace Maliev.LifecycleService.Infrastructure.Consumers;
@@ -23,6 +23,7 @@ public class UndoRevokeAccessConsumer : IConsumer<UndoRevokeAccessCommand>
     /// <inheritdoc/>
     public async Task Consume(ConsumeContext<UndoRevokeAccessCommand> context)
     {
-        await _handler.HandleAsync(context.Message, context.CancellationToken);
+        var employeeId = context.Message.Payload.EmployeeId;
+        await _handler.HandleAsync(employeeId, context.CancellationToken);
     }
 }

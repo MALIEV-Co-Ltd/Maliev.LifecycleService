@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Maliev.Aspire.ServiceDefaults.Authorization;
 using Maliev.LifecycleService.Application.Commands.Onboarding;
 using Maliev.LifecycleService.Application.Commands.Onboarding.Handlers;
@@ -14,7 +15,8 @@ namespace Maliev.LifecycleService.Api.Controllers;
 /// Controller for managing onboarding workflows.
 /// </summary>
 [ApiController]
-[Route("lifecycle/v1")]
+[ApiVersion("1.0")]
+[Route("lifecycle/v{version:apiVersion}")]
 [Authorize]
 public class OnboardingController : ControllerBase
 {
@@ -54,7 +56,7 @@ public class OnboardingController : ControllerBase
     /// <param name="ct">The cancellation token.</param>
     /// <returns>A created result with the onboarding workflow identifier.</returns>
     [HttpPost("employees/{employeeId}/onboarding/start")]
-    [RequirePermission(LifecyclePermissions.Manage)]
+    [RequirePermission(LifecyclePermissions.OnboardingsCreate)]
     public async Task<IActionResult> Start(Guid employeeId, [FromBody] StartOnboardingRequest request, CancellationToken ct)
     {
         var userId = GetUserId();
@@ -74,7 +76,7 @@ public class OnboardingController : ControllerBase
     /// <param name="ct">The cancellation token.</param>
     /// <returns>The onboarding status if found.</returns>
     [HttpGet("employees/{employeeId}/onboarding/status")]
-    [RequirePermission(LifecyclePermissions.Manage)]
+    [RequirePermission(LifecyclePermissions.OnboardingsCreate)]
     public async Task<IActionResult> GetStatus(Guid employeeId, CancellationToken ct)
     {
         var result = await _getStatusHandler.HandleAsync(new GetOnboardingStatusQuery(employeeId), ct);
@@ -90,7 +92,7 @@ public class OnboardingController : ControllerBase
     /// <param name="limit">The maximum number of items to return.</param>
     /// <returns>A collection of pending onboardings.</returns>
     [HttpGet("onboarding/pending")]
-    [RequirePermission(LifecyclePermissions.Manage)]
+    [RequirePermission(LifecyclePermissions.OnboardingsCreate)]
     public async Task<IActionResult> GetPending(CancellationToken ct, [FromQuery] int offset = 0, [FromQuery] int limit = 50)
     {
         var result = await _getPendingHandler.HandleAsync(new GetPendingOnboardingsQuery(offset, limit), ct);
@@ -105,7 +107,7 @@ public class OnboardingController : ControllerBase
     /// <param name="ct">The cancellation token.</param>
     /// <returns>No content on success.</returns>
     [HttpPut("onboarding-items/{itemId}/complete")]
-    [RequirePermission(LifecyclePermissions.Manage)]
+    [RequirePermission(LifecyclePermissions.OnboardingsUpdate)]
     public async Task<IActionResult> CompleteItem(Guid itemId, [FromBody] CompleteItemRequest request, CancellationToken ct)
     {
         var userId = GetUserId();
@@ -121,7 +123,7 @@ public class OnboardingController : ControllerBase
     /// <param name="ct">The cancellation token.</param>
     /// <returns>No content on success.</returns>
     [HttpPut("onboarding-items/{itemId}/reassign")]
-    [RequirePermission(LifecyclePermissions.Manage)]
+    [RequirePermission(LifecyclePermissions.OnboardingsUpdate)]
     public async Task<IActionResult> ReassignItem(Guid itemId, [FromBody] ReassignItemRequest request, CancellationToken ct)
     {
         var userId = GetUserId();
