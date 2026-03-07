@@ -63,6 +63,7 @@ coverage/
 # Repository Specific
 .claude/settings.local.json
 .gemini/settings.local.json
+.opencode/
 *MIGRATION*.md
 *SUMMARY*.md
 *AUDIT*.md
