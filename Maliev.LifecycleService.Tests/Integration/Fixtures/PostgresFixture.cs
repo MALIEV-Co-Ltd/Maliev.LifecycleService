@@ -9,7 +9,7 @@ namespace Maliev.LifecycleService.Tests.Integration.Fixtures;
 public class PostgresFixture : IAsyncLifetime
 {
     private readonly PostgreSqlContainer _container = 
-                #pragma warning disable CS0618
+#pragma warning disable CS0618
         new PostgreSqlBuilder().WithImage("postgres:18-alpine")
         .WithDatabase("lifecycledb")
         .WithUsername("postgres")
