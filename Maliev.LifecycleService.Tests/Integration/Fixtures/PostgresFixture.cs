@@ -8,11 +8,14 @@ namespace Maliev.LifecycleService.Tests.Integration.Fixtures;
 /// </summary>
 public class PostgresFixture : IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder().WithImage("postgres:18-alpine")
+    private readonly PostgreSqlContainer _container = 
+                #pragma warning disable CS0618
+        new PostgreSqlBuilder().WithImage("postgres:18-alpine")
         .WithDatabase("lifecycledb")
         .WithUsername("postgres")
         .WithPassword("postgres")
         .Build();
+#pragma warning restore CS0618
 
     /// <summary>
     /// Gets the connection string for the PostgreSQL container.
@@ -37,3 +40,7 @@ public class PostgresFixture : IAsyncLifetime
         await _container.StopAsync();
     }
 }
+
+
+
+
