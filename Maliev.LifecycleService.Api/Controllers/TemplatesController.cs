@@ -15,7 +15,7 @@ namespace Maliev.LifecycleService.Api.Controllers;
 /// Controller for managing onboarding templates.
 /// </summary>
 [ApiController]
-[ApiVersion("1.0")]
+[ApiVersion("1")]
 [Route("lifecycle/v{version:apiVersion}/templates")]
 [Authorize]
 public class TemplatesController : ControllerBase
