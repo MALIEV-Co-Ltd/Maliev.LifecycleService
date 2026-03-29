@@ -102,6 +102,25 @@ dotnet test --filter "FullyQualifiedName~Maliev.LifecycleService.Tests.Unit.Vali
 - **Integration Tests**: Use `WebApplicationFactory` and Testcontainers (Postgres, RabbitMQ, Redis).
 - **Structure**: Use `// Arrange`, `// Act`, `// Assert` comments in test bodies.
 
+### Testing Strategy (4-Tier Pyramid Context)
+
+This service's tests cover **Tier 1 (Unit)** and **Tier 2 (Service Integration)** of the Maliev testing pyramid:
+
+| Tier | What to Test | Infrastructure |
+|------|-------------|---------------|
+| **Unit** | Business logic, domain models, service methods with mocked dependencies | None (mocks only) |
+| **Service Integration** | API endpoints, database persistence, permission enforcement, input validation | `BaseIntegrationTestFactory` + Testcontainers (Postgres/Redis/RabbitMQ) |
+
+**Tier 3 (System Integration)** — cross-service workflows and event chains — is tested in `Maliev.Aspire.Tests/`.
+
+#### Key Rules
+- Use `BaseIntegrationTestFactory<TProgram, TDbContext>` for integration tests (real Testcontainers, never InMemoryDatabase)
+- Test naming: `MethodName_StateUnderTest_ExpectedBehavior`
+- Minimum 80% code coverage
+- Use `[Fact]` for single cases, `[Theory]` for parameterized tests
+
+> Full ecosystem test strategy: `Maliev.Aspire.Tests/TEST_PLAN.md`
+
 ## Dependencies & Tools
 - **ORM**: Entity Framework Core (Npgsql).
 - **Messaging**: MassTransit (RabbitMQ).
