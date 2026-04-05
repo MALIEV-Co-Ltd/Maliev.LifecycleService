@@ -17,7 +17,6 @@ namespace Maliev.LifecycleService.Api.Controllers;
 [ApiController]
 [ApiVersion("1")]
 [Route("lifecycle/v{version:apiVersion}")]
-[Authorize]
 public class ExitInterviewController : ControllerBase
 {
     private readonly RecordExitInterviewCommandHandler _recordHandler;

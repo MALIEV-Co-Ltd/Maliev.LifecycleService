@@ -17,7 +17,6 @@ namespace Maliev.LifecycleService.Api.Controllers;
 [ApiController]
 [ApiVersion("1")]
 [Route("lifecycle/v{version:apiVersion}/templates")]
-[Authorize]
 public class TemplatesController : ControllerBase
 {
     private readonly CreateTemplateCommandHandler _createHandler;
