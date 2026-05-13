@@ -1,4 +1,5 @@
 using Maliev.LifecycleService.Application.Interfaces;
+using Maliev.LifecycleService.Application.Utilities;
 using Maliev.LifecycleService.Domain.Entities;
 using Maliev.MessagingContracts.Contracts.Employee;
 using Maliev.MessagingContracts.Contracts.Lifecycle;
@@ -107,7 +108,7 @@ public class DepartmentTransferredEventConsumer : IConsumer<DepartmentTransferre
             Payload: new OnboardingStartedEventPayload(
                 ChecklistId: checklist.Id,
                 EmployeeId: checklist.EmployeeId,
-                StartDate: checklist.StartDate,
+                StartDate: DateTimeOffsetMapper.FromUtcDateTime(checklist.StartDate),
                 TotalItems: checklist.TotalItems
             )
         ));

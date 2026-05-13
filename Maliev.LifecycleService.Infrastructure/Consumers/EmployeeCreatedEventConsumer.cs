@@ -1,4 +1,5 @@
 using Maliev.LifecycleService.Application.Interfaces;
+using Maliev.LifecycleService.Application.Utilities;
 using Maliev.LifecycleService.Domain.Entities;
 using Maliev.MessagingContracts;
 using Maliev.MessagingContracts.Contracts.Employee;
@@ -113,7 +114,7 @@ public class EmployeeCreatedEventConsumer : IConsumer<EmployeeCreatedEvent>
                 Payload: new OnboardingStartedEventPayload(
                     ChecklistId: checklist.Id,
                     EmployeeId: checklist.EmployeeId,
-                    StartDate: checklist.StartDate,
+                    StartDate: DateTimeOffsetMapper.FromUtcDateTime(checklist.StartDate),
                     TotalItems: checklist.TotalItems
                 )
             )
