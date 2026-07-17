@@ -184,7 +184,12 @@ public sealed class ContainerWorkflowContractTests
         Assert.Contains("Run production image startup and liveness smoke", workflow, StringComparison.Ordinal);
         Assert.Contains("postgres:18-alpine", workflow, StringComparison.Ordinal);
         Assert.Contains("redis:7-alpine", workflow, StringComparison.Ordinal);
-        Assert.Contains("rabbitmq:4-management-alpine", workflow, StringComparison.Ordinal);
+        Assert.Contains(
+            "rabbitmq:4-management-alpine@sha256:0753b75ce99094c385483d89449d532a0544fb85e4942a478b21cc497ab66d33",
+            workflow,
+            StringComparison.Ordinal);
+        Assert.Contains("--env HOME=/tmp", workflow, StringComparison.Ordinal);
+        Assert.Contains("--env RABBITMQ_MNESIA_BASE=/tmp/rabbitmq/mnesia", workflow, StringComparison.Ordinal);
         Assert.DoesNotContain("--tmpfs /var/lib/rabbitmq", workflow, StringComparison.Ordinal);
         Assert.DoesNotContain("RABBITMQ_ERLANG_COOKIE", workflow, StringComparison.Ordinal);
         Assert.DoesNotContain("--entrypoint sh", workflow, StringComparison.Ordinal);
