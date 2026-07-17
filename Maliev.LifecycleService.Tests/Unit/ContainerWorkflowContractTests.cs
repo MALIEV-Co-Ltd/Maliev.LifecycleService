@@ -185,8 +185,10 @@ public sealed class ContainerWorkflowContractTests
         Assert.Contains("postgres:18-alpine", workflow, StringComparison.Ordinal);
         Assert.Contains("redis:7-alpine", workflow, StringComparison.Ordinal);
         Assert.Contains("rabbitmq:4-management-alpine", workflow, StringComparison.Ordinal);
-        Assert.Contains("--tmpfs /var/lib/rabbitmq:rw,uid=100,gid=101,mode=0700", workflow, StringComparison.Ordinal);
+        Assert.Contains("--tmpfs /var/lib/rabbitmq:rw,mode=0770", workflow, StringComparison.Ordinal);
         Assert.Contains("RABBITMQ_ERLANG_COOKIE=lifecycle-ci-cookie", workflow, StringComparison.Ordinal);
+        Assert.Contains("chown -R rabbitmq:rabbitmq /var/lib/rabbitmq", workflow, StringComparison.Ordinal);
+        Assert.Contains("exec docker-entrypoint.sh rabbitmq-server", workflow, StringComparison.Ordinal);
         Assert.Contains("/lifecycle/liveness", workflow, StringComparison.Ordinal);
         Assert.Contains("trap cleanup EXIT", workflow, StringComparison.Ordinal);
         Assert.Contains("docker logs", workflow, StringComparison.Ordinal);
