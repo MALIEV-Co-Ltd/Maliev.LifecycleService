@@ -7,7 +7,9 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
+using Moq;
 using Maliev.LifecycleService.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Testcontainers.PostgreSql;
@@ -19,7 +21,7 @@ namespace Maliev.LifecycleService.Tests.TestUtilities;
 
 public class LifecycleTestWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _postgresContainer = 
+    private readonly PostgreSqlContainer _postgresContainer =
 #pragma warning disable CS0618
         new PostgreSqlBuilder().WithImage("postgres:18-alpine")
         .Build();
@@ -67,6 +69,21 @@ public class LifecycleTestWebApplicationFactory : WebApplicationFactory<Program>
         builder.UseSetting("Features:FailOpenOnIAMError", "true");
         builder.UseSetting("IAM:RegistrationDelaySeconds", "0");
 
+        builder.ConfigureAppConfiguration((_, configuration) =>
+        {
+            configuration.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ServiceAuthentication:ClientId"] = "service-lifecycle-service",
+                ["ServiceAuthentication:ClientSecret"] = "lifecycle-integration-secret-with-at-least-32-bytes",
+                ["Services:AuthService:BaseUrl"] = "https://auth.test",
+                ["Services:IAMService:BaseUrl"] = "https://iam.test",
+                ["Jwt:PublicKey"] = Convert.ToBase64String(
+                    System.Text.Encoding.UTF8.GetBytes(_testRsa.ExportSubjectPublicKeyInfoPem())),
+                ["Jwt:Issuer"] = "https://api.maliev.com",
+                ["Jwt:Audience"] = "https://api.maliev.com"
+            });
+        });
+
         // Set environment variables for connection strings (read early in configuration pipeline)
         Environment.SetEnvironmentVariable("ConnectionStrings__LifecycleDbContext", _postgresContainer.GetConnectionString());
         Environment.SetEnvironmentVariable("ConnectionStrings__redis", _redisContainer.GetConnectionString());
@@ -74,6 +91,17 @@ public class LifecycleTestWebApplicationFactory : WebApplicationFactory<Program>
 
         builder.ConfigureTestServices(services =>
         {
+            services.RemoveAll<Maliev.Aspire.ServiceDefaults.IAM.IIamServiceClient>();
+            var iamClient = new Moq.Mock<Maliev.Aspire.ServiceDefaults.IAM.IIamServiceClient>();
+            iamClient
+                .Setup(client => client.CheckPermissionAsync(
+                    Moq.It.IsAny<string>(),
+                    Moq.It.IsAny<string>(),
+                    Moq.It.IsAny<string>(),
+                    Moq.It.IsAny<CancellationToken>()))
+                .ReturnsAsync(false);
+            services.AddScoped(_ => iamClient.Object);
+
             services.PostConfigureAll<JwtBearerOptions>(options =>
             {
                 options.MapInboundClaims = false;

@@ -74,8 +74,11 @@ try
     builder.AddJwtAuthentication();
     builder.Services.AddPermissionAuthorization();
 
+    // IAM Authorization
+    builder.AddAuthServiceTokenExchange("LifecycleService");
+    builder.AddAuthServiceIAMClient();
+
     // IAM Registration
-    builder.AddIAMServiceClient("lifecycle");
     builder.Services.AddIAMRegistration<LifecycleIAMRegistrationService>("lifecycle");
 
     // --- 6. API Configuration ---
