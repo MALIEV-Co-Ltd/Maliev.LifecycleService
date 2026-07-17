@@ -110,7 +110,10 @@ jobs:
             --env POSTGRES_PASSWORD=postgres \
             postgres:18-alpine >/dev/null
           docker run --detach --name "$redis" --network "$network" redis:7-alpine >/dev/null
-          docker run --detach --name "$rabbitmq" --network "$network" rabbitmq:4-management-alpine >/dev/null
+          docker run --detach --name "$rabbitmq" --network "$network" \
+            --tmpfs /var/lib/rabbitmq:rw,uid=100,gid=101,mode=0700 \
+            --env RABBITMQ_ERLANG_COOKIE=lifecycle-ci-cookie \
+            rabbitmq:4-management-alpine >/dev/null
 
           wait_for docker exec "$postgres" pg_isready --host localhost --dbname lifecycledb --username postgres
           wait_for docker exec "$redis" redis-cli ping
