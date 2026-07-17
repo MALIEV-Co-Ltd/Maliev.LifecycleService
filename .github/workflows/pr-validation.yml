@@ -80,6 +80,8 @@ jobs:
           rabbit_user="health-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           rabbit_password="$(openssl rand -hex 24)"
           rabbit_auth="$(printf '%s:%s' "$rabbit_user" "$rabbit_password" | base64 --wrap=0)"
+          service_client_secret="$(openssl rand -hex 32)"
+          jwt_public_key="$(openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 2>/dev/null | openssl pkey -pubout -outform PEM 2>/dev/null | base64 --wrap=0)"
 
           cleanup() {
             status=$?
@@ -130,8 +132,14 @@ jobs:
             --publish 127.0.0.1::8080 \
             --env ASPNETCORE_ENVIRONMENT=Testing \
             --env CORS__AllowedOrigins__0=http://localhost \
-            --env Features__FailOpenOnIAMError=true \
             --env IAM__RegistrationDelaySeconds=0 \
+            --env ServiceAuthentication__ClientId=service-lifecycle-service \
+            --env ServiceAuthentication__ClientSecret="$service_client_secret" \
+            --env Services__AuthService__BaseUrl=https://auth.test \
+            --env Services__IAMService__BaseUrl=https://iam.test \
+            --env Jwt__PublicKey="$jwt_public_key" \
+            --env Jwt__Issuer=https://api.maliev.test \
+            --env Jwt__Audience=https://api.maliev.test \
             --env ConnectionStrings__LifecycleDbContext='Host='"$postgres"';Port=5432;Database=lifecycledb;Username=postgres;Password=postgres' \
             --env ConnectionStrings__redis="$redis:6379" \
             --env ConnectionStrings__rabbitmq="amqp://$rabbit_user:$rabbit_password@$rabbitmq:5672" \
