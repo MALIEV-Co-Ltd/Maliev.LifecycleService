@@ -205,6 +205,18 @@ public sealed class ContainerWorkflowContractTests
         Assert.DoesNotContain("RABBITMQ_ERLANG_COOKIE", workflow, StringComparison.Ordinal);
         Assert.DoesNotContain("--entrypoint sh", workflow, StringComparison.Ordinal);
         Assert.DoesNotContain("chown -R rabbitmq:rabbitmq", workflow, StringComparison.Ordinal);
+        Assert.Contains("service_client_secret=\"$(openssl rand -hex 32)\"", workflow, StringComparison.Ordinal);
+        Assert.Contains("openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048", workflow, StringComparison.Ordinal);
+        Assert.Contains("--env ServiceAuthentication__ClientId=service-lifecycle-service", workflow, StringComparison.Ordinal);
+        Assert.Contains("--env ServiceAuthentication__ClientSecret=\"$service_client_secret\"", workflow, StringComparison.Ordinal);
+        Assert.Contains("--env Services__AuthService__BaseUrl=https://auth.test", workflow, StringComparison.Ordinal);
+        Assert.Contains("--env Services__IAMService__BaseUrl=https://iam.test", workflow, StringComparison.Ordinal);
+        Assert.Contains("--env Jwt__PublicKey=\"$jwt_public_key\"", workflow, StringComparison.Ordinal);
+        Assert.Contains("--env Jwt__Issuer=https://api.maliev.test", workflow, StringComparison.Ordinal);
+        Assert.Contains("--env Jwt__Audience=https://api.maliev.test", workflow, StringComparison.Ordinal);
+        Assert.DoesNotContain("Features__FailOpenOnIAMError", workflow, StringComparison.Ordinal);
+        Assert.DoesNotContain("Jwt__PrivateKey", workflow, StringComparison.Ordinal);
+        Assert.DoesNotContain("Jwt__SecurityKey", workflow, StringComparison.Ordinal);
         Assert.Contains("/lifecycle/liveness", workflow, StringComparison.Ordinal);
         Assert.Contains("trap cleanup EXIT", workflow, StringComparison.Ordinal);
         Assert.Contains("docker logs", workflow, StringComparison.Ordinal);
