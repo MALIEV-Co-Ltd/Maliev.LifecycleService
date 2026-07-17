@@ -190,6 +190,17 @@ public sealed class ContainerWorkflowContractTests
             StringComparison.Ordinal);
         Assert.Contains("--env HOME=/tmp", workflow, StringComparison.Ordinal);
         Assert.Contains("--env RABBITMQ_MNESIA_BASE=/tmp/rabbitmq/mnesia", workflow, StringComparison.Ordinal);
+        Assert.Contains(
+            "http://127.0.0.1:15672/api/health/checks/local-alarms",
+            workflow,
+            StringComparison.Ordinal);
+        Assert.Contains("openssl rand -hex 24", workflow, StringComparison.Ordinal);
+        Assert.Contains("RABBITMQ_DEFAULT_USER=\"$rabbit_user\"", workflow, StringComparison.Ordinal);
+        Assert.Contains("RABBITMQ_DEFAULT_PASS=\"$rabbit_password\"", workflow, StringComparison.Ordinal);
+        Assert.Contains("Authorization: Basic $rabbit_auth", workflow, StringComparison.Ordinal);
+        Assert.DoesNotContain(string.Concat("Z3Vlc3", "Q6Z3Vlc3Q="), workflow, StringComparison.Ordinal);
+        Assert.DoesNotContain(string.Concat("guest", ":", "guest"), workflow, StringComparison.Ordinal);
+        Assert.DoesNotContain(string.Concat("--password=", "guest"), workflow, StringComparison.Ordinal);
         Assert.DoesNotContain("--tmpfs /var/lib/rabbitmq", workflow, StringComparison.Ordinal);
         Assert.DoesNotContain("RABBITMQ_ERLANG_COOKIE", workflow, StringComparison.Ordinal);
         Assert.DoesNotContain("--entrypoint sh", workflow, StringComparison.Ordinal);

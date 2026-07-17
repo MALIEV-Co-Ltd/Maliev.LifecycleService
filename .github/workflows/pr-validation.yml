@@ -77,6 +77,9 @@ jobs:
           redis="${prefix}-redis"
           rabbitmq="${prefix}-rabbitmq"
           service="${prefix}-service"
+          rabbit_user="health-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          rabbit_password="$(openssl rand -hex 24)"
+          rabbit_auth="$(printf '%s:%s' "$rabbit_user" "$rabbit_password" | base64 --wrap=0)"
 
           cleanup() {
             status=$?
@@ -113,11 +116,15 @@ jobs:
           docker run --detach --name "$rabbitmq" --network "$network" \
             --env HOME=/tmp \
             --env RABBITMQ_MNESIA_BASE=/tmp/rabbitmq/mnesia \
+            --env RABBITMQ_DEFAULT_USER="$rabbit_user" \
+            --env RABBITMQ_DEFAULT_PASS="$rabbit_password" \
             rabbitmq:4-management-alpine@sha256:0753b75ce99094c385483d89449d532a0544fb85e4942a478b21cc497ab66d33 >/dev/null
 
           wait_for docker exec "$postgres" pg_isready --host localhost --dbname lifecycledb --username postgres
           wait_for docker exec "$redis" redis-cli ping
-          wait_for docker exec "$rabbitmq" rabbitmq-diagnostics --quiet ping
+          wait_for docker exec "$rabbitmq" wget --quiet --output-document=- \
+            --header "Authorization: Basic $rabbit_auth" \
+            http://127.0.0.1:15672/api/health/checks/local-alarms
 
           docker run --detach --name "$service" --network "$network" \
             --publish 127.0.0.1::8080 \
@@ -127,7 +134,7 @@ jobs:
             --env IAM__RegistrationDelaySeconds=0 \
             --env ConnectionStrings__LifecycleDbContext='Host='"$postgres"';Port=5432;Database=lifecycledb;Username=postgres;Password=postgres' \
             --env ConnectionStrings__redis="$redis:6379" \
-            --env ConnectionStrings__rabbitmq="amqp://guest:guest@$rabbitmq:5672" \
+            --env ConnectionStrings__rabbitmq="amqp://$rabbit_user:$rabbit_password@$rabbitmq:5672" \
             "$IMAGE_TAG" >/dev/null
 
           runtime_uid="$(docker image inspect --format '{{.Config.User}}' "$IMAGE_TAG")"
