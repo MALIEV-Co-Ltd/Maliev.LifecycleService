@@ -106,13 +106,6 @@ jobs:
           registry_digest="$(gcloud artifacts docker images describe "$IMAGE_NAME:$IMAGE_TAG" --format='value(image_summary.digest)')"
           test "$registry_digest" = "$IMAGE_DIGEST"
 
-      - name: Generate build provenance attestation
-        uses: actions/attest@a1948c3f048ba23858d222213b7c278aabede763
-        with:
-          subject-name: ${{ env.IMAGE_NAME }}
-          subject-digest: ${{ steps.build.outputs.digest }}
-          push-to-registry: true
-
       - name: Generate image SBOM evidence
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
         with:
@@ -138,6 +131,13 @@ jobs:
           scanners: vuln
           severity: HIGH,CRITICAL
           exit-code: "1"
+
+      - name: Generate build provenance attestation
+        uses: actions/attest@a1948c3f048ba23858d222213b7c278aabede763
+        with:
+          subject-name: ${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true
 
       - name: Checkout GitOps evidence repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0

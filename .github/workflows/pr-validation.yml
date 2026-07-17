@@ -13,32 +13,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  prep:
-    runs-on: ubuntu-latest
-    outputs:
-      version_format: ${{ steps.set-version.outputs.version_format }}
-    steps:
-      - id: set-version
-        run: |
-          BASE_BRANCH="${{ github.base_ref }}"
-          if [ "$BASE_BRANCH" == "main" ]; then
-            VERSION_FORMAT="1.0.*"
-          elif [ "$BASE_BRANCH" == "staging" ]; then
-            VERSION_FORMAT="1.0.*-beta*"
-          else
-            VERSION_FORMAT="1.0.*-alpha*"
-          fi
-          echo "version_format=$VERSION_FORMAT" >> $GITHUB_OUTPUT
-
   build-and-test:
-    needs: prep
     permissions:
       contents: read
       packages: read
     uses: ./.github/workflows/_build-and-test.yml
     with:
       solution_file: Maliev.LifecycleService.slnx
-      extra_args: -p:SharedLibraryVersion=${{ needs.prep.outputs.version_format }}
     secrets:
       gitops_pat: ${{ secrets.GITOPS_PAT }}
 
@@ -79,10 +60,79 @@ jobs:
         run: |
           set -euo pipefail
           metadata="$(docker image inspect "$IMAGE_TAG")"
-          test "$(jq -r '.[0].Config.User' <<< "$metadata")" = "app"
+          runtime_uid="$(jq -r '.[0].Config.User' <<< "$metadata")"
+          [[ "$runtime_uid" =~ ^[0-9]+$ ]]
+          test "$runtime_uid" -gt 0
           test "$(jq -c '.[0].Config.Entrypoint' <<< "$metadata")" = '["dotnet","Maliev.LifecycleService.Api.dll"]'
           test "$(jq -r '.[0].Config.ExposedPorts | has("8080/tcp")' <<< "$metadata")" = "true"
           test "$(jq -r '.[0].Config.Healthcheck == null' <<< "$metadata")" = "true"
+
+      - name: Run production image startup and liveness smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          prefix="lifecycle-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          network="${prefix}-network"
+          postgres="${prefix}-postgres"
+          redis="${prefix}-redis"
+          rabbitmq="${prefix}-rabbitmq"
+          service="${prefix}-service"
+
+          cleanup() {
+            status=$?
+            trap - EXIT
+            if [ "$status" -ne 0 ]; then
+              for container in "$service" "$postgres" "$redis" "$rabbitmq"; do
+                echo "===== $container logs ====="
+                docker logs "$container" 2>&1 || true
+              done
+            fi
+            docker rm --force "$service" "$postgres" "$redis" "$rabbitmq" >/dev/null 2>&1 || true
+            docker network rm "$network" >/dev/null 2>&1 || true
+            exit "$status"
+          }
+          trap cleanup EXIT
+
+          wait_for() {
+            for _ in $(seq 1 60); do
+              if "$@" >/dev/null 2>&1; then
+                return 0
+              fi
+              sleep 1
+            done
+            return 1
+          }
+
+          docker network create "$network" >/dev/null
+          docker run --detach --name "$postgres" --network "$network" \
+            --env POSTGRES_DB=lifecycledb \
+            --env POSTGRES_USER=postgres \
+            --env POSTGRES_PASSWORD=postgres \
+            postgres:18-alpine >/dev/null
+          docker run --detach --name "$redis" --network "$network" redis:7-alpine >/dev/null
+          docker run --detach --name "$rabbitmq" --network "$network" rabbitmq:4-management-alpine >/dev/null
+
+          wait_for docker exec "$postgres" pg_isready --host localhost --dbname lifecycledb --username postgres
+          wait_for docker exec "$redis" redis-cli ping
+          wait_for docker exec "$rabbitmq" rabbitmq-diagnostics --quiet ping
+
+          docker run --detach --name "$service" --network "$network" \
+            --publish 127.0.0.1::8080 \
+            --env ASPNETCORE_ENVIRONMENT=Testing \
+            --env CORS__AllowedOrigins__0=http://localhost \
+            --env Features__FailOpenOnIAMError=true \
+            --env IAM__RegistrationDelaySeconds=0 \
+            --env ConnectionStrings__LifecycleDbContext='Host='"$postgres"';Port=5432;Database=lifecycledb;Username=postgres;Password=postgres' \
+            --env ConnectionStrings__redis="$redis:6379" \
+            --env ConnectionStrings__rabbitmq="amqp://guest:guest@$rabbitmq:5672" \
+            "$IMAGE_TAG" >/dev/null
+
+          runtime_uid="$(docker image inspect --format '{{.Config.User}}' "$IMAGE_TAG")"
+          [[ "$runtime_uid" =~ ^[0-9]+$ ]]
+          test "$runtime_uid" -gt 0
+          test "$(docker inspect --format '{{.State.Running}}' "$service")" = "true"
+          host_port="$(docker port "$service" 8080/tcp | awk -F: '{print $NF}')"
+          wait_for curl --fail --silent --show-error "http://127.0.0.1:$host_port/lifecycle/liveness"
 
       - name: Generate image SBOM
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25

@@ -19,6 +19,7 @@ public sealed class ContainerWorkflowContractTests
     public void DockerAndDevelopWorkflow_UseExplicitPackageModeWithoutSourceMutation()
     {
         var dockerfile = ReadRepositoryFile("Maliev.LifecycleService.Api", "Dockerfile");
+        var directoryProps = ReadRepositoryFile("Directory.Build.props");
         var workflow = ReadRepositoryFile(".github", "workflows", "ci-develop.yml");
 
         Assert.Contains("GITHUB_ACTIONS=true", dockerfile, StringComparison.Ordinal);
@@ -27,8 +28,54 @@ public sealed class ContainerWorkflowContractTests
             "dotnet restore \"./Maliev.LifecycleService.Api/Maliev.LifecycleService.Api.csproj\"",
             dockerfile,
             StringComparison.Ordinal);
-        Assert.Contains("ARG SHARED_LIBRARY_VERSION=1.0.96-alpha", dockerfile, StringComparison.Ordinal);
-        Assert.Contains("-p:SharedLibraryVersion=$SHARED_LIBRARY_VERSION", dockerfile, StringComparison.Ordinal);
+        Assert.Contains("ARG MESSAGING_CONTRACTS_VERSION=1.0.96-alpha", dockerfile, StringComparison.Ordinal);
+        Assert.Contains("ARG SERVICE_DEFAULTS_VERSION=1.0.89-alpha", dockerfile, StringComparison.Ordinal);
+        Assert.Contains("-p:MessagingContractsVersion=$MESSAGING_CONTRACTS_VERSION", dockerfile, StringComparison.Ordinal);
+        Assert.Contains("-p:ServiceDefaultsVersion=$SERVICE_DEFAULTS_VERSION", dockerfile, StringComparison.Ordinal);
+        Assert.Contains(
+            "<MessagingContractsVersion Condition=\"'$(MessagingContractsVersion)' == ''\">1.0.96-alpha</MessagingContractsVersion>",
+            directoryProps,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "<ServiceDefaultsVersion Condition=\"'$(ServiceDefaultsVersion)' == ''\">1.0.89-alpha</ServiceDefaultsVersion>",
+            directoryProps,
+            StringComparison.Ordinal);
+
+        foreach (var project in new[]
+                 {
+                     "Maliev.LifecycleService.Api",
+                     "Maliev.LifecycleService.Application",
+                     "Maliev.LifecycleService.Infrastructure"
+                 })
+        {
+            var projectFile = ReadRepositoryFile(project, $"{project}.csproj");
+            Assert.Contains(
+                "<PackageReference Include=\"Maliev.Aspire.ServiceDefaults\" Version=\"$(ServiceDefaultsVersion)\" />",
+                projectFile,
+                StringComparison.Ordinal);
+            Assert.DoesNotContain(
+                "<PackageReference Include=\"Maliev.Aspire.ServiceDefaults\" Version=\"$(SharedLibraryVersion)\" />",
+                projectFile,
+                StringComparison.Ordinal);
+        }
+
+        foreach (var project in new[]
+                 {
+                     "Maliev.LifecycleService.Application",
+                     "Maliev.LifecycleService.Infrastructure"
+                 })
+        {
+            var projectFile = ReadRepositoryFile(project, $"{project}.csproj");
+            Assert.Contains(
+                "<PackageReference Include=\"Maliev.MessagingContracts\" Version=\"$(MessagingContractsVersion)\" />",
+                projectFile,
+                StringComparison.Ordinal);
+            Assert.DoesNotContain(
+                "<PackageReference Include=\"Maliev.MessagingContracts\" Version=\"$(SharedLibraryVersion)\" />",
+                projectFile,
+                StringComparison.Ordinal);
+        }
+
         Assert.DoesNotContain("sed -i", workflow, StringComparison.Ordinal);
         Assert.DoesNotContain("Switch to PackageReference", workflow, StringComparison.Ordinal);
     }
@@ -43,6 +90,8 @@ public sealed class ContainerWorkflowContractTests
 
         Assert.DoesNotContain("HEALTHCHECK", dockerfile, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("curl", dockerfile, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("USER $APP_UID", dockerfile, StringComparison.Ordinal);
+        Assert.DoesNotContain("USER app", dockerfile, StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -122,6 +171,51 @@ public sealed class ContainerWorkflowContractTests
             Assert.Contains("docker buildx imagetools create", release, StringComparison.Ordinal);
             Assert.DoesNotContain("docker build ", release, StringComparison.Ordinal);
         }
+    }
+
+    /// <summary>
+    /// PR validation must exercise the actual production image with its real infrastructure dependencies.
+    /// </summary>
+    [Fact]
+    public void PrWorkflow_RunsProductionImageSmokeWithDiagnosticsAndCleanup()
+    {
+        var workflow = ReadRepositoryFile(".github", "workflows", "pr-validation.yml");
+
+        Assert.Contains("Run production image startup and liveness smoke", workflow, StringComparison.Ordinal);
+        Assert.Contains("postgres:18-alpine", workflow, StringComparison.Ordinal);
+        Assert.Contains("redis:7-alpine", workflow, StringComparison.Ordinal);
+        Assert.Contains("rabbitmq:4-management-alpine", workflow, StringComparison.Ordinal);
+        Assert.Contains("/lifecycle/liveness", workflow, StringComparison.Ordinal);
+        Assert.Contains("trap cleanup EXIT", workflow, StringComparison.Ordinal);
+        Assert.Contains("docker logs", workflow, StringComparison.Ordinal);
+        Assert.Contains("^[0-9]+$", workflow, StringComparison.Ordinal);
+        Assert.Contains("State.Running", workflow, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// A promotable attestation must only be emitted after the exact digest passes the severity gate.
+    /// </summary>
+    [Fact]
+    public void ReleaseWorkflows_AttestOnlyAfterExactDigestSeverityGate()
+    {
+        var develop = ReadRepositoryFile(".github", "workflows", "ci-develop.yml");
+        var staging = ReadRepositoryFile(".github", "workflows", "ci-staging.yml");
+        var production = ReadRepositoryFile(".github", "workflows", "ci-main.yml");
+
+        Assert.True(
+            develop.IndexOf("Scan published digest for high-severity vulnerabilities", StringComparison.Ordinal) <
+            develop.IndexOf("Generate build provenance attestation", StringComparison.Ordinal));
+        Assert.True(
+            staging.IndexOf("Scan verified development digest for high-severity vulnerabilities", StringComparison.Ordinal) <
+            staging.IndexOf("Attest approved staging release identity", StringComparison.Ordinal));
+        Assert.Contains(
+            "gh attestation verify \"oci://$SOURCE_IMAGE@$source_digest\"",
+            production,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "Maliev.LifecycleService/.github/workflows/ci-staging.yml",
+            production,
+            StringComparison.Ordinal);
     }
 
     /// <summary>

@@ -6,7 +6,8 @@ EXPOSE 8081
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
-ARG SHARED_LIBRARY_VERSION=1.0.96-alpha
+ARG MESSAGING_CONTRACTS_VERSION=1.0.96-alpha
+ARG SERVICE_DEFAULTS_VERSION=1.0.89-alpha
 WORKDIR /src
 
 COPY ["Maliev.LifecycleService.Api/Maliev.LifecycleService.Api.csproj", "Maliev.LifecycleService.Api/"]
@@ -22,7 +23,8 @@ RUN --mount=type=secret,id=nuget_username \
     NUGET_USERNAME=$(cat /run/secrets/nuget_username) \
     NUGET_PASSWORD=$(cat /run/secrets/nuget_password) \
     dotnet restore "./Maliev.LifecycleService.Api/Maliev.LifecycleService.Api.csproj" \
-      -p:SharedLibraryVersion=$SHARED_LIBRARY_VERSION
+      -p:MessagingContractsVersion=$MESSAGING_CONTRACTS_VERSION \
+      -p:ServiceDefaultsVersion=$SERVICE_DEFAULTS_VERSION
 
 COPY . .
 WORKDIR "/src/Maliev.LifecycleService.Api"
@@ -30,23 +32,26 @@ RUN GITHUB_ACTIONS=true dotnet build "./Maliev.LifecycleService.Api.csproj" \
     -c $BUILD_CONFIGURATION \
     -o /app/build \
     --no-restore \
-    -p:SharedLibraryVersion=$SHARED_LIBRARY_VERSION
+    -p:MessagingContractsVersion=$MESSAGING_CONTRACTS_VERSION \
+    -p:ServiceDefaultsVersion=$SERVICE_DEFAULTS_VERSION
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-ARG SHARED_LIBRARY_VERSION=1.0.96-alpha
+ARG MESSAGING_CONTRACTS_VERSION=1.0.96-alpha
+ARG SERVICE_DEFAULTS_VERSION=1.0.89-alpha
 RUN GITHUB_ACTIONS=true dotnet publish "./Maliev.LifecycleService.Api.csproj" \
     -c $BUILD_CONFIGURATION \
     -o /app/publish \
     --no-restore \
     /p:UseAppHost=false \
-    -p:SharedLibraryVersion=$SHARED_LIBRARY_VERSION
+    -p:MessagingContractsVersion=$MESSAGING_CONTRACTS_VERSION \
+    -p:ServiceDefaultsVersion=$SERVICE_DEFAULTS_VERSION
 
 FROM base AS final
 WORKDIR /app
-RUN chown -R app:app /app
-USER app
-COPY --chown=app:app --from=publish /app/publish .
+RUN chown -R $APP_UID:$APP_UID /app
+USER $APP_UID
+COPY --chown=$APP_UID:$APP_UID --from=publish /app/publish .
 
 ENV ASPNETCORE_URLS=http://+:8080
 ENV ASPNETCORE_ENVIRONMENT=Production

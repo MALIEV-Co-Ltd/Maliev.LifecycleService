@@ -25,7 +25,6 @@ jobs:
     uses: ./.github/workflows/_build-and-test.yml
     with:
       solution_file: Maliev.LifecycleService.slnx
-      extra_args: -p:SharedLibraryVersion=1.0.*
     secrets:
       gitops_pat: ${{ secrets.GITOPS_PAT }}
 

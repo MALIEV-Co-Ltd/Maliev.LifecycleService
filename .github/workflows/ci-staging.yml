@@ -19,7 +19,6 @@ jobs:
     uses: ./.github/workflows/_build-and-test.yml
     with:
       solution_file: Maliev.LifecycleService.slnx
-      extra_args: -p:SharedLibraryVersion=1.0.*-beta*
     secrets:
       gitops_pat: ${{ secrets.GITOPS_PAT }}
 
@@ -99,6 +98,15 @@ jobs:
             --source-ref refs/heads/develop \
             --signer-workflow "github.com/MALIEV-Co-Ltd/Maliev.LifecycleService/.github/workflows/ci-develop.yml"
           echo "source_digest=$source_digest" >> "$GITHUB_OUTPUT"
+
+      - name: Scan verified development digest for high-severity vulnerabilities
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
+        with:
+          image-ref: ${{ env.SOURCE_IMAGE }}@${{ steps.source.outputs.source_digest }}
+          format: table
+          scanners: vuln
+          severity: HIGH,CRITICAL
+          exit-code: "1"
 
       - name: Promote exact digest without rebuilding
         id: promotion
