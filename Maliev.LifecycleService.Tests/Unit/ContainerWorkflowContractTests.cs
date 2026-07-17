@@ -207,6 +207,8 @@ public sealed class ContainerWorkflowContractTests
         Assert.DoesNotContain("chown -R rabbitmq:rabbitmq", workflow, StringComparison.Ordinal);
         Assert.Contains("service_client_secret=\"$(openssl rand -hex 32)\"", workflow, StringComparison.Ordinal);
         Assert.Contains("openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048", workflow, StringComparison.Ordinal);
+        Assert.Contains("openssl pkey -pubout -outform PEM", workflow, StringComparison.Ordinal);
+        Assert.DoesNotContain("openssl pkey -pubout -outform DER", workflow, StringComparison.Ordinal);
         Assert.Contains("--env ServiceAuthentication__ClientId=service-lifecycle-service", workflow, StringComparison.Ordinal);
         Assert.Contains("--env ServiceAuthentication__ClientSecret=\"$service_client_secret\"", workflow, StringComparison.Ordinal);
         Assert.Contains("--env Services__AuthService__BaseUrl=https://auth.test", workflow, StringComparison.Ordinal);
