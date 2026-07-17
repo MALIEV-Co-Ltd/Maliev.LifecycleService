@@ -6,7 +6,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <SharedLibraryVersion Condition="'$(SharedLibraryVersion)' == ''">1.0.*-*</SharedLibraryVersion>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(GITHUB_ACTIONS)' != 'true'">
@@ -18,7 +17,7 @@
   <ItemGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
     <ProjectReference Include="..\Maliev.LifecycleService.Application\Maliev.LifecycleService.Application.csproj" />
     <ProjectReference Include="..\Maliev.LifecycleService.Infrastructure\Maliev.LifecycleService.Infrastructure.csproj" />
-    <PackageReference Include="Maliev.Aspire.ServiceDefaults" Version="$(SharedLibraryVersion)" />
+    <PackageReference Include="Maliev.Aspire.ServiceDefaults" Version="$(ServiceDefaultsVersion)" />
   </ItemGroup>
 
 
