@@ -174,6 +174,20 @@ public sealed class ContainerWorkflowContractTests
     }
 
     /// <summary>
+    /// Ordinary protected-branch synchronization must validate without publishing or promoting images.
+    /// </summary>
+    [Fact]
+    public void BranchPushWorkflows_RequireExplicitDispatchForEnvironmentWrites()
+    {
+        var develop = ReadRepositoryFile(".github", "workflows", "ci-develop.yml");
+        var production = ReadRepositoryFile(".github", "workflows", "ci-main.yml");
+
+        Assert.Contains("workflow_dispatch:", develop, StringComparison.Ordinal);
+        Assert.Contains("if: github.event_name == 'workflow_dispatch'", develop, StringComparison.Ordinal);
+        Assert.Contains("if: github.event_name == 'workflow_dispatch'", production, StringComparison.Ordinal);
+    }
+
+    /// <summary>
     /// PR validation must exercise the actual production image with its real infrastructure dependencies.
     /// </summary>
     [Fact]

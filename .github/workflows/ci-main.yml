@@ -30,6 +30,7 @@ jobs:
 
   promote-image:
     name: Promote verified digest to production
+    if: github.event_name == 'workflow_dispatch'
     needs: build-and-test
     runs-on: ubuntu-latest
     timeout-minutes: 20
